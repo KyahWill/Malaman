@@ -1,5 +1,6 @@
 import { supabase } from '$lib/supabase';
 import type { AuthError, User } from '@supabase/supabase-js';
+import type { UserProfile, UserRole } from '$lib/types';
 
 export interface AuthCredentials {
 	email: string;
@@ -9,7 +10,15 @@ export interface AuthCredentials {
 export interface RegisterData extends AuthCredentials {
 	firstName: string;
 	lastName: string;
-	role?: 'student' | 'instructor';
+	role?: UserRole;
+}
+
+export interface ProfileUpdateData {
+	first_name?: string;
+	last_name?: string;
+	avatar_url?: string;
+	learning_preferences?: any;
+	knowledge_profile?: any;
 }
 
 export class AuthService {
@@ -65,6 +74,33 @@ export class AuthService {
 	}
 
 	/**
+	 * Get user profile from database
+	 */
+	static async getProfile(userId: string): Promise<{ profile: UserProfile | null; error: any }> {
+		const { data, error } = await supabase
+			.from('profiles')
+			.select('*')
+			.eq('id', userId)
+			.single();
+
+		return { profile: data, error };
+	}
+
+	/**
+	 * Update user profile
+	 */
+	static async updateProfile(userId: string, updates: ProfileUpdateData): Promise<{ profile: UserProfile | null; error: any }> {
+		const { data, error } = await supabase
+			.from('profiles')
+			.update({ ...updates, updated_at: new Date().toISOString() })
+			.eq('id', userId)
+			.select()
+			.single();
+
+		return { profile: data, error };
+	}
+
+	/**
 	 * Reset password
 	 */
 	static async resetPassword(email: string): Promise<{ error: AuthError | null }> {
@@ -80,5 +116,28 @@ export class AuthService {
 	static async updatePassword(password: string): Promise<{ error: AuthError | null }> {
 		const { error } = await supabase.auth.updateUser({ password });
 		return { error };
+	}
+
+	/**
+	 * Check if user has required role
+	 */
+	static hasRole(userRole: UserRole, requiredRoles: UserRole[]): boolean {
+		return requiredRoles.includes(userRole);
+	}
+
+	/**
+	 * Check if user can access resource based on role
+	 */
+	static canAccess(userRole: UserRole, resourceType: 'student' | 'instructor' | 'admin'): boolean {
+		const roleHierarchy: Record<UserRole, number> = {
+			student: 1,
+			instructor: 2,
+			admin: 3
+		};
+
+		const requiredLevel = roleHierarchy[resourceType];
+		const userLevel = roleHierarchy[userRole];
+
+		return userLevel >= requiredLevel;
 	}
 }

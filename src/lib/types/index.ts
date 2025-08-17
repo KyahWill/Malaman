@@ -18,11 +18,16 @@ export interface User {
 }
 
 export interface UserProfile {
+	id: string;
+	email: string;
+	role: UserRole;
 	first_name: string;
 	last_name: string;
 	avatar_url?: string;
 	learning_preferences: LearningPreferences;
 	knowledge_profile: KnowledgeProfile;
+	created_at: string;
+	updated_at: string;
 }
 
 export interface LearningPreferences {

@@ -43,7 +43,7 @@
 	{type}
 	{disabled}
 	class={cn(baseClasses, variantClasses[variant], sizeClasses[size], className)}
-	on:click={onclick}
+	onclick={onclick}
 >
 	{#if loading}
 		<svg class="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
