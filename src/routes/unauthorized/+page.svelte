@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
-	import { profile } from '$lib/stores/auth';
+	import { page } from '$app/stores';
+	import type { LayoutData } from '../$types';
+
+	let { data }: { data: LayoutData } = $props();
+	let { profile } = $derived(data);
 </script>
 
 <svelte:head>
@@ -20,9 +24,9 @@
 				You don't have permission to access this page.
 			</p>
 			
-			{#if $profile}
+			{#if profile}
 				<p class="text-sm text-gray-500 mb-8">
-					You are signed in as a <span class="font-medium capitalize">{$profile.role}</span>.
+					You are signed in as a <span class="font-medium capitalize">{profile.role}</span>.
 					This page requires different permissions.
 				</p>
 			{/if}

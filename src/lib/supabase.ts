@@ -5,14 +5,6 @@ if (!PUBLIC_SUPABASE_URL || !PUBLIC_SUPABASE_ANON_KEY) {
 	throw new Error('Missing Supabase environment variables. Please check your .env file.');
 }
 
-export const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
-	auth: {
-		autoRefreshToken: true,
-		persistSession: true,
-		detectSessionInUrl: true
-	}
-});
-
 // Database type definitions
 export type UserRole = 'student' | 'instructor' | 'admin';
 export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced';
@@ -415,3 +407,11 @@ export interface Database {
 		};
 	};
 }
+
+export const supabase = createClient<Database>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
+	auth: {
+		autoRefreshToken: true,
+		persistSession: true,
+		detectSessionInUrl: true
+	}
+});

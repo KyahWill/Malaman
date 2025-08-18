@@ -61,8 +61,21 @@ export class AuthService {
 	 * Sign out the current user
 	 */
 	static async signOut(): Promise<{ error: AuthError | null }> {
-		const { error } = await supabase.auth.signOut();
-		return { error };
+		try {
+			console.log('Attempting to sign out user...');
+			const { error } = await supabase.auth.signOut();
+			
+			if (error) {
+				console.error('Supabase signOut error:', error);
+			} else {
+				console.log('Successfully signed out from Supabase');
+			}
+			
+			return { error };
+		} catch (err) {
+			console.error('Unexpected error during signOut:', err);
+			return { error: err as AuthError };
+		}
 	}
 
 	/**

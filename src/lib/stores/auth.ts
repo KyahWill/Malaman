@@ -55,6 +55,42 @@ export const authHelpers = {
 		authStore.set({ ...initialState, initialized: true });
 	},
 
+	// Logout helper
+	logout: async () => {
+		try {
+			const { error } = await AuthService.signOut();
+			if (error) {
+				console.error('Logout error:', error);
+			}
+		} catch (err) {
+			console.error('Logout error:', err);
+		} finally {
+			// Always reset the store, even if logout fails
+			authHelpers.reset();
+		}
+	},
+
+	// Force logout - clears everything locally without calling Supabase
+	forceLogout: () => {
+		console.log('Force logout - clearing local state');
+		authHelpers.reset();
+		
+		// Clear any potential localStorage items
+		if (typeof window !== 'undefined') {
+			try {
+				// Clear Supabase session from localStorage
+				const keys = Object.keys(localStorage);
+				keys.forEach(key => {
+					if (key.startsWith('sb-') || key.includes('supabase')) {
+						localStorage.removeItem(key);
+					}
+				});
+			} catch (err) {
+				console.error('Error clearing localStorage:', err);
+			}
+		}
+	},
+
 	// Initialize auth state
 	initialize: async () => {
 		try {

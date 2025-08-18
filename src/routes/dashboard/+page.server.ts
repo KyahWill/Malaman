@@ -1,17 +1,18 @@
 import { redirect } from '@sveltejs/kit';
-import { requireAuth } from '$lib/middleware/auth';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async (event) => {
+export const load: PageServerLoad = async ({ locals: { session, profile } }) => {
 	// Require authentication
-	const { user, profile } = await requireAuth(event);
+	if (!session) {
+		redirect(303, '/auth');
+	}
 	
 	// Redirect to role-specific dashboard
 	if (profile?.role === 'instructor') {
-		throw redirect(302, '/dashboard/instructor');
+		redirect(303, '/dashboard/instructor');
 	} else if (profile?.role === 'admin') {
-		throw redirect(302, '/dashboard/admin');
+		redirect(303, '/dashboard/admin');
 	} else {
-		throw redirect(302, '/dashboard/student');
+		redirect(303, '/dashboard/student');
 	}
 };

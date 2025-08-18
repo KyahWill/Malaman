@@ -1,14 +1,19 @@
 <script lang="ts">
-	import { isAuthenticated, profile } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
+	import LogoutButton from '$lib/components/auth/LogoutButton.svelte';
+	import type { PageData } from './$types';
+
+	let { data }: { data: PageData } = $props();
+	let { session, profile } = $derived(data);
+	let isAuthenticated = $derived(!!session);
 
 	function handleGetStarted() {
-		if ($isAuthenticated) {
-			const redirectPath = $profile?.role === 'instructor' ? '/dashboard/instructor' : '/dashboard/student';
+		if (isAuthenticated) {
+			const redirectPath = profile?.role === 'instructor' ? '/dashboard/instructor' : '/dashboard/student';
 			goto(redirectPath);
 		} else {
-			goto('/auth/register');
+			goto('/auth');
 		}
 	}
 </script>
@@ -29,9 +34,9 @@
 					</h1>
 				</div>
 				<div class="flex items-center space-x-4">
-					{#if $isAuthenticated}
+					{#if isAuthenticated}
 						<span class="text-sm text-gray-600">
-							Welcome, {$profile?.first_name || 'User'}!
+							Welcome, {profile?.first_name || 'User'}!
 						</span>
 						<Button
 							variant="primary"
@@ -39,22 +44,17 @@
 						>
 							Go to Dashboard
 						</Button>
-						<Button
-							variant="secondary"
-							onclick={() => goto('/auth/logout')}
-						>
-							Sign Out
-						</Button>
+						<LogoutButton variant="secondary" />
 					{:else}
 						<Button
 							variant="secondary"
-							onclick={() => goto('/auth/login')}
+							onclick={() => goto('/auth')}
 						>
 							Sign In
 						</Button>
 						<Button
 							variant="primary"
-							onclick={() => goto('/auth/register')}
+							onclick={() => goto('/auth')}
 						>
 							Get Started
 						</Button>
@@ -81,7 +81,7 @@
 					onclick={handleGetStarted}
 					class="text-lg px-8 py-4"
 				>
-					{$isAuthenticated ? 'Go to Dashboard' : 'Start Learning Today'}
+					{isAuthenticated ? 'Go to Dashboard' : 'Start Learning Today'}
 				</Button>
 			</div>
 
@@ -118,7 +118,7 @@
 				</div>
 			</div>
 
-			{#if !$isAuthenticated}
+			{#if !isAuthenticated}
 				<div class="mt-16 bg-white p-8 rounded-lg shadow-sm">
 					<h3 class="text-2xl font-bold text-gray-900 mb-4">Ready to get started?</h3>
 					<p class="text-gray-600 mb-6">Join thousands of learners and educators using our platform.</p>
@@ -126,14 +126,14 @@
 						<Button
 							variant="primary"
 							size="lg"
-							onclick={() => goto('/auth/register')}
+							onclick={() => goto('/auth')}
 						>
 							Create Account
 						</Button>
 						<Button
 							variant="secondary"
 							size="lg"
-							onclick={() => goto('/auth/login')}
+							onclick={() => goto('/auth')}
 						>
 							Sign In
 						</Button>

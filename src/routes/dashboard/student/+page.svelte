@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { profile } from '$lib/stores/auth';
 	import Button from '$lib/components/ui/Button.svelte';
+	import LogoutButton from '$lib/components/auth/LogoutButton.svelte';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+	let { profile } = $derived(data);
 </script>
 
 <svelte:head>
@@ -20,7 +21,7 @@
 				<div>
 					<h1 class="text-3xl font-bold text-gray-900">Student Dashboard</h1>
 					<p class="mt-1 text-sm text-gray-600">
-						Welcome back, {$profile?.first_name || 'Student'}!
+						Welcome back, {profile?.first_name || 'Student'}!
 					</p>
 				</div>
 				<div class="flex items-center space-x-4">
@@ -30,12 +31,7 @@
 					>
 						Profile
 					</Button>
-					<Button
-						variant="secondary"
-						onclick={() => goto('/auth/logout')}
-					>
-						Sign Out
-					</Button>
+					<LogoutButton variant="secondary" />
 				</div>
 			</div>
 		</div>
