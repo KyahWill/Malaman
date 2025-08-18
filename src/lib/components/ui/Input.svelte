@@ -10,6 +10,9 @@
 		class?: string;
 		id?: string;
 		name?: string;
+		min?: string;
+		max?: string;
+		step?: string;
 		autocomplete?: string | null;
 		oninput?: (event: Event) => void;
 		onchange?: (event: Event) => void;
@@ -27,6 +30,9 @@
 		class: className = "",
 		id,
 		name,
+		min,
+		max,
+		step,
 		autocomplete,
 		oninput,
 		onchange,
@@ -47,6 +53,9 @@
 	{required}
 	{id}
 	{name}
+	{min}
+	{max}
+	{step}
 	autocomplete={autocomplete as any}
 	class={cn(baseClasses, className)}
 	{oninput}
