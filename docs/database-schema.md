@@ -576,3 +576,275 @@ psql -h your-host -U postgres -d your-database < data.sql
 - Failed backup alerts
 
 This comprehensive database schema provides a solid foundation for the Personalized LMS with proper security, performance, and maintainability considerations.
+## Cour
+se Management Schema Updates
+
+The Course Management System has been fully implemented with the following schema enhancements:
+
+### Enhanced Course Table
+
+The `courses` table now includes comprehensive metadata for course management:
+
+```sql
+CREATE TABLE courses (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title TEXT NOT NULL CHECK (length(title) >= 3 AND length(title) <= 200),
+    description TEXT,
+    instructor_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    final_assessment_id UUID REFERENCES assessments(id) ON DELETE SET NULL,
+    tags TEXT[] DEFAULT '{}',
+    difficulty_level difficulty_level NOT NULL DEFAULT 'beginner',
+    estimated_duration INTEGER CHECK (estimated_duration > 0 AND estimated_duration <= 10080),
+    is_published BOOLEAN NOT NULL DEFAULT false,
+    enrollment_count INTEGER DEFAULT 0,
+    completion_rate DECIMAL(5,2) DEFAULT 0.00,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Indexes for performance
+CREATE INDEX idx_courses_instructor_id ON courses(instructor_id);
+CREATE INDEX idx_courses_published ON courses(is_published) WHERE is_published = true;
+CREATE INDEX idx_courses_difficulty ON courses(difficulty_level);
+CREATE INDEX idx_courses_tags ON courses USING GIN(tags);
+CREATE INDEX idx_courses_title_search ON courses USING GIN(to_tsvector('english', title || ' ' || COALESCE(description, '')));
+```
+
+### Enrollment Management
+
+The `enrollments` table tracks student course enrollments:
+
+```sql
+CREATE TABLE enrollments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    student_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+    enrolled_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    completed_at TIMESTAMP WITH TIME ZONE,
+    progress JSONB DEFAULT '{}',
+    
+    UNIQUE(student_id, course_id)
+);
+
+-- Indexes
+CREATE INDEX idx_enrollments_student_id ON enrollments(student_id);
+CREATE INDEX idx_enrollments_course_id ON enrollments(course_id);
+CREATE INDEX idx_enrollments_enrolled_at ON enrollments(enrolled_at);
+CREATE INDEX idx_enrollments_completed ON enrollments(completed_at) WHERE completed_at IS NOT NULL;
+```
+
+### Course Analytics Support
+
+Additional tables and functions support comprehensive course analytics:
+
+```sql
+-- Course analytics materialized view for performance
+CREATE MATERIALIZED VIEW course_analytics AS
+SELECT 
+    c.id as course_id,
+    c.title,
+    c.instructor_id,
+    COUNT(e.id) as total_enrollments,
+    COUNT(e.completed_at) as total_completions,
+    CASE 
+        WHEN COUNT(e.id) > 0 
+        THEN ROUND((COUNT(e.completed_at)::DECIMAL / COUNT(e.id)) * 100, 2)
+        ELSE 0 
+    END as completion_rate,
+    AVG(EXTRACT(EPOCH FROM (e.completed_at - e.enrolled_at))/3600) as avg_completion_hours,
+    COUNT(CASE WHEN e.enrolled_at >= NOW() - INTERVAL '30 days' THEN 1 END) as recent_enrollments
+FROM courses c
+LEFT JOIN enrollments e ON c.id = e.course_id
+WHERE c.is_published = true
+GROUP BY c.id, c.title, c.instructor_id;
+
+-- Refresh analytics periodically
+CREATE INDEX idx_course_analytics_course_id ON course_analytics(course_id);
+CREATE INDEX idx_course_analytics_instructor_id ON course_analytics(instructor_id);
+```
+
+### Row Level Security Policies
+
+Enhanced RLS policies for course management:
+
+```sql
+-- Courses table policies
+CREATE POLICY "Public can view published courses" ON courses
+    FOR SELECT USING (is_published = true);
+
+CREATE POLICY "Instructors can view their own courses" ON courses
+    FOR SELECT USING (instructor_id = auth.uid());
+
+CREATE POLICY "Instructors can create courses" ON courses
+    FOR INSERT WITH CHECK (instructor_id = auth.uid());
+
+CREATE POLICY "Instructors can update their own courses" ON courses
+    FOR UPDATE USING (instructor_id = auth.uid());
+
+CREATE POLICY "Instructors can delete their own courses" ON courses
+    FOR DELETE USING (instructor_id = auth.uid());
+
+-- Enrollments table policies
+CREATE POLICY "Students can view their own enrollments" ON enrollments
+    FOR SELECT USING (student_id = auth.uid());
+
+CREATE POLICY "Students can enroll in published courses" ON enrollments
+    FOR INSERT WITH CHECK (
+        student_id = auth.uid() AND 
+        EXISTS (SELECT 1 FROM courses WHERE id = course_id AND is_published = true)
+    );
+
+CREATE POLICY "Students can update their own enrollment progress" ON enrollments
+    FOR UPDATE USING (student_id = auth.uid());
+
+CREATE POLICY "Instructors can view enrollments for their courses" ON enrollments
+    FOR SELECT USING (
+        EXISTS (SELECT 1 FROM courses WHERE id = course_id AND instructor_id = auth.uid())
+    );
+```
+
+### Database Functions
+
+Custom functions support course management operations:
+
+```sql
+-- Function to update course enrollment count
+CREATE OR REPLACE FUNCTION update_course_enrollment_count()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        UPDATE courses 
+        SET enrollment_count = enrollment_count + 1,
+            updated_at = NOW()
+        WHERE id = NEW.course_id;
+        RETURN NEW;
+    ELSIF TG_OP = 'DELETE' THEN
+        UPDATE courses 
+        SET enrollment_count = GREATEST(enrollment_count - 1, 0),
+            updated_at = NOW()
+        WHERE id = OLD.course_id;
+        RETURN OLD;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to automatically update enrollment counts
+CREATE TRIGGER trigger_update_enrollment_count
+    AFTER INSERT OR DELETE ON enrollments
+    FOR EACH ROW EXECUTE FUNCTION update_course_enrollment_count();
+
+-- Function to calculate course completion rate
+CREATE OR REPLACE FUNCTION update_course_completion_rate()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE courses 
+    SET completion_rate = (
+        SELECT CASE 
+            WHEN COUNT(*) > 0 
+            THEN ROUND((COUNT(completed_at)::DECIMAL / COUNT(*)) * 100, 2)
+            ELSE 0 
+        END
+        FROM enrollments 
+        WHERE course_id = COALESCE(NEW.course_id, OLD.course_id)
+    ),
+    updated_at = NOW()
+    WHERE id = COALESCE(NEW.course_id, OLD.course_id);
+    
+    RETURN COALESCE(NEW, OLD);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to update completion rates
+CREATE TRIGGER trigger_update_completion_rate
+    AFTER INSERT OR UPDATE OR DELETE ON enrollments
+    FOR EACH ROW EXECUTE FUNCTION update_course_completion_rate();
+```
+
+### Search and Discovery Features
+
+Full-text search capabilities for course discovery:
+
+```sql
+-- Full-text search function
+CREATE OR REPLACE FUNCTION search_courses(
+    search_query TEXT DEFAULT '',
+    difficulty_filter difficulty_level DEFAULT NULL,
+    instructor_filter UUID DEFAULT NULL,
+    tag_filter TEXT[] DEFAULT NULL,
+    limit_count INTEGER DEFAULT 20,
+    offset_count INTEGER DEFAULT 0
+)
+RETURNS TABLE (
+    id UUID,
+    title TEXT,
+    description TEXT,
+    instructor_id UUID,
+    instructor_name TEXT,
+    tags TEXT[],
+    difficulty_level difficulty_level,
+    estimated_duration INTEGER,
+    enrollment_count INTEGER,
+    completion_rate DECIMAL,
+    created_at TIMESTAMP WITH TIME ZONE,
+    rank REAL
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        c.id,
+        c.title,
+        c.description,
+        c.instructor_id,
+        COALESCE(p.first_name || ' ' || p.last_name, p.email) as instructor_name,
+        c.tags,
+        c.difficulty_level,
+        c.estimated_duration,
+        c.enrollment_count,
+        c.completion_rate,
+        c.created_at,
+        CASE 
+            WHEN search_query = '' THEN 0
+            ELSE ts_rank(
+                to_tsvector('english', c.title || ' ' || COALESCE(c.description, '')),
+                plainto_tsquery('english', search_query)
+            )
+        END as rank
+    FROM courses c
+    JOIN profiles p ON c.instructor_id = p.id
+    WHERE 
+        c.is_published = true
+        AND (search_query = '' OR to_tsvector('english', c.title || ' ' || COALESCE(c.description, '')) @@ plainto_tsquery('english', search_query))
+        AND (difficulty_filter IS NULL OR c.difficulty_level = difficulty_filter)
+        AND (instructor_filter IS NULL OR c.instructor_id = instructor_filter)
+        AND (tag_filter IS NULL OR c.tags && tag_filter)
+    ORDER BY 
+        CASE WHEN search_query = '' THEN c.created_at END DESC,
+        CASE WHEN search_query != '' THEN rank END DESC
+    LIMIT limit_count
+    OFFSET offset_count;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+### Performance Optimizations
+
+The course management system includes several performance optimizations:
+
+1. **Materialized Views**: Course analytics are pre-computed for fast dashboard loading
+2. **Strategic Indexing**: Indexes on commonly queried fields (instructor_id, is_published, tags)
+3. **Full-Text Search**: GIN indexes for efficient text search across course titles and descriptions
+4. **Trigger-Based Updates**: Automatic maintenance of enrollment counts and completion rates
+5. **Query Optimization**: Efficient joins and subqueries for complex analytics
+
+### Data Integrity Constraints
+
+The schema enforces data integrity through:
+
+- **Foreign Key Constraints**: Maintain referential integrity between related tables
+- **Check Constraints**: Validate data ranges (e.g., duration limits, title length)
+- **Unique Constraints**: Prevent duplicate enrollments
+- **NOT NULL Constraints**: Ensure required fields are populated
+- **Default Values**: Provide sensible defaults for optional fields
+
+This comprehensive course management schema supports all the features implemented in the Course Management System, including course creation, enrollment tracking, analytics, and search functionality.

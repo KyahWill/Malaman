@@ -52,7 +52,7 @@
   - **Documentation**: Create instructor guide for course creation and management. Document course lifecycle, publishing workflows, and enrollment processes. Include analytics interpretation guide and course optimization best practices.
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 10.1_
 
-- [ ] 7. Rich Text Editor Integration
+- [-] 7. Rich Text Editor Integration
   - Integrate Tiptap rich text editor with Svelte
   - Configure editor with formatting options (bold, italic, lists, links)
   - Implement content sanitization and HTML rendering

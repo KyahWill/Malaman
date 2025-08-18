@@ -27,6 +27,7 @@
 		"@sveltejs/vite-plugin-svelte": "^6.0.0",
 		"@tailwindcss/postcss": "^4.1.12",
 		"@tailwindcss/typography": "^0.5.16",
+		"@types/dompurify": "^3.0.5",
 		"autoprefixer": "^10.4.21",
 		"postcss": "^8.5.6",
 		"svelte": "^5.0.0",
@@ -37,6 +38,17 @@
 	},
 	"dependencies": {
 		"@supabase/ssr": "^0.6.1",
-		"@supabase/supabase-js": "^2.55.0"
+		"@supabase/supabase-js": "^2.55.0",
+		"@tiptap/core": "^3.2.0",
+		"@tiptap/extension-color": "^3.2.0",
+		"@tiptap/extension-highlight": "^3.2.0",
+		"@tiptap/extension-image": "^3.2.0",
+		"@tiptap/extension-link": "^3.2.0",
+		"@tiptap/extension-text-align": "^3.2.0",
+		"@tiptap/extension-underline": "^3.2.0",
+		"@tiptap/extension-youtube": "^3.2.0",
+		"@tiptap/pm": "^3.2.0",
+		"@tiptap/starter-kit": "^3.2.0",
+		"dompurify": "^3.2.6"
 	}
 }

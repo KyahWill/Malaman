@@ -584,3 +584,243 @@ try {
 ```
 
 This documentation provides a comprehensive reference for all data models, validation rules, and usage patterns in the Personalized LMS system. The models are designed to be type-safe, well-validated, and support the complex requirements of personalized learning with AI integration.
+##
+ Course Management API Endpoints
+
+The Course Management System provides comprehensive REST API endpoints for all course-related operations.
+
+### Course CRUD Operations
+
+#### GET /api/courses
+Retrieve a list of courses with optional filtering and pagination.
+
+**Query Parameters:**
+- `page`: Page number (default: 1)
+- `limit`: Items per page (default: 10, max: 50)
+- `search`: Search term for title/description
+- `difficulty`: Filter by difficulty level
+- `instructor_id`: Filter by instructor
+- `published`: Filter by publication status
+
+**Response:**
+```typescript
+{
+  courses: Course[],
+  pagination: {
+    page: number,
+    limit: number,
+    total: number,
+    totalPages: number
+  }
+}
+```
+
+#### POST /api/courses
+Create a new course.
+
+**Request Body:**
+```typescript
+{
+  title: string,
+  description?: string,
+  difficulty_level: DifficultyLevel,
+  estimated_duration?: number,
+  tags?: string[],
+  is_published?: boolean
+}
+```
+
+**Response:**
+```typescript
+{
+  success: boolean,
+  course: Course
+}
+```
+
+#### GET /api/courses/[id]
+Retrieve a specific course by ID.
+
+**Response:**
+```typescript
+{
+  course: CourseWithDetails,
+  enrollment_status?: EnrollmentStatus
+}
+```
+
+#### PUT /api/courses/[id]
+Update an existing course.
+
+**Request Body:** Partial course data
+**Response:** Updated course object
+
+#### DELETE /api/courses/[id]
+Delete a course (instructor/admin only).
+
+**Response:**
+```typescript
+{
+  success: boolean,
+  message: string
+}
+```
+
+### Enrollment Management
+
+#### POST /api/courses/[id]/enroll
+Enroll the current user in a course.
+
+**Response:**
+```typescript
+{
+  success: boolean,
+  enrollment: Enrollment,
+  message: string
+}
+```
+
+#### DELETE /api/courses/[id]/enroll
+Unenroll the current user from a course.
+
+**Response:**
+```typescript
+{
+  success: boolean,
+  message: string
+}
+```
+
+#### GET /api/courses/[id]/students
+Get enrolled students for a course (instructor only).
+
+**Response:**
+```typescript
+{
+  students: Array<{
+    student: UserProfile,
+    enrollment: Enrollment,
+    progress: StudentProgress[]
+  }>
+}
+```
+
+### Course Analytics
+
+#### GET /api/courses/[id]/analytics
+Get comprehensive analytics for a course (instructor only).
+
+**Query Parameters:**
+- `period`: Time period (7d, 30d, 90d, 1y)
+- `metrics`: Specific metrics to include
+
+**Response:**
+```typescript
+{
+  enrollment_metrics: {
+    total_enrollments: number,
+    active_enrollments: number,
+    completion_rate: number,
+    enrollment_trend: Array<{date: string, count: number}>
+  },
+  engagement_metrics: {
+    average_session_duration: number,
+    content_completion_rate: number,
+    assessment_participation_rate: number,
+    return_rate: number
+  },
+  performance_metrics: {
+    average_assessment_score: number,
+    pass_rate: number,
+    time_to_completion: number,
+    student_satisfaction: number
+  }
+}
+```
+
+### Search and Discovery
+
+#### GET /api/courses/search
+Advanced course search with multiple criteria.
+
+**Query Parameters:**
+- `q`: Search query
+- `tags`: Comma-separated tags
+- `difficulty`: Difficulty level filter
+- `duration_min`: Minimum duration filter
+- `duration_max`: Maximum duration filter
+- `sort`: Sort order (newest, oldest, popular, rating)
+
+**Response:**
+```typescript
+{
+  courses: Course[],
+  facets: {
+    difficulties: Array<{level: string, count: number}>,
+    tags: Array<{tag: string, count: number}>,
+    instructors: Array<{instructor: UserProfile, count: number}>
+  },
+  total: number
+}
+```
+
+## Error Handling for Course APIs
+
+### Common Error Responses
+
+**400 Bad Request:**
+```typescript
+{
+  error: "Validation failed",
+  details: ValidationError[]
+}
+```
+
+**401 Unauthorized:**
+```typescript
+{
+  error: "Authentication required",
+  message: "Please log in to access this resource"
+}
+```
+
+**403 Forbidden:**
+```typescript
+{
+  error: "Insufficient permissions",
+  message: "You don't have permission to perform this action",
+  required_role: "instructor"
+}
+```
+
+**404 Not Found:**
+```typescript
+{
+  error: "Course not found",
+  message: "The requested course does not exist or is not accessible"
+}
+```
+
+**409 Conflict:**
+```typescript
+{
+  error: "Already enrolled",
+  message: "You are already enrolled in this course"
+}
+```
+
+### Rate Limiting
+
+Course API endpoints implement rate limiting:
+- **General endpoints**: 100 requests per minute
+- **Search endpoints**: 50 requests per minute
+- **Analytics endpoints**: 20 requests per minute
+
+Rate limit headers are included in responses:
+```
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1640995200
+```
+
+This comprehensive API documentation provides all the information needed to integrate with the Course Management System programmatically.
