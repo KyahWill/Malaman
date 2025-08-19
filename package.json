@@ -19,7 +19,8 @@
 		"db:push": "supabase db push",
 		"db:pull": "supabase db pull",
 		"db:diff": "supabase db diff",
-		"db:migration": "supabase migration new"
+		"db:migration": "supabase migration new",
+		"storage:init": "node scripts/init-storage.js"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^6.0.0",

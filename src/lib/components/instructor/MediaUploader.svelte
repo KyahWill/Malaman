@@ -1,16 +1,18 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { supabase } from '$lib/supabase.js';
 	import { Button } from '$lib/components/ui';
 	import { toastHelpers } from '$lib/stores/toast.js';
+	import type { MediaMetadata } from '$lib/services/mediaStorage.js';
 
 	interface Props {
 		accept?: string;
 		maxSize?: number; // in MB
-		onUpload: (url: string, metadata?: any) => void;
+		onUpload: (url: string, metadata?: MediaMetadata) => void;
 		currentUrl?: string;
 		type: 'image' | 'video' | 'file';
 		disabled?: boolean;
+		contentId?: string; // For organizing files by lesson/course
+		generateThumbnail?: boolean;
 	}
 
 	let {
@@ -19,7 +21,9 @@
 		onUpload,
 		currentUrl = '',
 		type,
-		disabled = false
+		disabled = false,
+		contentId,
+		generateThumbnail = false
 	}: Props = $props();
 
 	let fileInput: HTMLInputElement;
@@ -78,10 +82,18 @@
 	}
 
 	// Upload file via API
-	async function uploadFile(file: File): Promise<string> {
+	async function uploadFile(file: File): Promise<{ url: string; metadata: MediaMetadata }> {
 		const formData = new FormData();
 		formData.append('file', file);
 		formData.append('type', type);
+		
+		if (contentId) {
+			formData.append('contentId', contentId);
+		}
+		
+		if (generateThumbnail) {
+			formData.append('generateThumbnail', 'true');
+		}
 
 		const response = await fetch('/api/media/upload', {
 			method: 'POST',
@@ -94,7 +106,7 @@
 		}
 
 		const result = await response.json();
-		return result.url;
+		return { url: result.url, metadata: result.metadata };
 	}
 
 	// Handle file selection
@@ -120,20 +132,12 @@
 				}
 			}, 200);
 
-			const url = await uploadFile(file);
+			const result = await uploadFile(file);
 			
 			clearInterval(progressInterval);
 			uploadProgress = 100;
 
-			// Prepare metadata
-			const metadata = {
-				filename: file.name,
-				type: file.type,
-				size: file.size,
-				lastModified: file.lastModified
-			};
-
-			onUpload(url, metadata);
+			onUpload(result.url, result.metadata);
 			toastHelpers.success('File uploaded successfully');
 
 		} catch (error) {
