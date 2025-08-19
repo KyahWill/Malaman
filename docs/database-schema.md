@@ -228,21 +228,66 @@ Individual learning units within courses.
 - Has one assessment
 - Can have prerequisite lessons
 
-### content_blocks
-Individual pieces of content within lessons.
+### content_blocks ✅ IMPLEMENTED
+Individual pieces of content within lessons supporting the unified lesson editor.
 
 **Key Features:**
-- Support for multiple media types
-- Ordered sequence within lessons
-- Flexible JSONB content storage
-- Metadata for additional properties
+- ✅ Support for multiple media types with dedicated editors
+- ✅ Ordered sequence within lessons with drag-and-drop reordering
+- ✅ Flexible JSONB content storage for different content types
+- ✅ Metadata for additional properties (title, description, accessibility notes)
+- ✅ Validation for content completeness and accessibility compliance
 
 **Content Types:**
-- `rich_text`: HTML content with formatting
-- `image`: Images with alt text and captions
-- `video`: Uploaded video files
-- `file`: Downloadable files (PDFs, documents)
-- `youtube`: Embedded YouTube videos
+- ✅ `rich_text`: HTML content with Tiptap editor integration, word count, and sanitization
+- ✅ `image`: Images with mandatory alt text, optional captions, and upload support
+- ✅ `video`: Uploaded video files with HTML5 player and metadata tracking
+- ✅ `file`: Downloadable files with metadata display and direct download links
+- ✅ `youtube`: Embedded YouTube videos with URL validation and metadata extraction
+
+**Content Structure Examples:**
+```json
+// Rich Text Content
+{
+  "rich_text": {
+    "html": "<h2>Introduction</h2><p>Welcome to this lesson...</p>",
+    "plain_text": "Introduction\nWelcome to this lesson...",
+    "word_count": 25
+  }
+}
+
+// Image Content
+{
+  "image": {
+    "url": "https://storage.supabase.co/...",
+    "alt_text": "Diagram showing the water cycle process",
+    "caption": "The water cycle includes evaporation, condensation, and precipitation",
+    "width": 800,
+    "height": 600
+  }
+}
+
+// YouTube Content
+{
+  "youtube": {
+    "video_id": "dQw4w9WgXcQ",
+    "title": "Educational Video Title",
+    "thumbnail_url": "https://img.youtube.com/vi/...",
+    "duration": 240
+  }
+}
+```
+
+**Metadata Structure:**
+```json
+{
+  "title": "Content Block Title",
+  "description": "Brief description of the content",
+  "accessibility_notes": "Additional accessibility information",
+  "estimated_read_time": 5,
+  "tags": ["introduction", "concept"]
+}
+```
 
 ### enrollments
 Tracks student enrollment in courses.

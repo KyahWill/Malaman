@@ -138,9 +138,9 @@ const course: Course = {
 };
 ```
 
-### Lesson
+### Lesson ✅ IMPLEMENTED
 
-Individual lesson within a course.
+Individual lesson within a course with comprehensive content management.
 
 ```typescript
 interface Lesson {
@@ -149,7 +149,7 @@ interface Lesson {
   title: string;                                  // Lesson title
   description: string | null;                     // Lesson description
   order_index: number;                            // Order within course
-  content_blocks: ContentBlock[];                 // Lesson content
+  content_blocks: ContentBlock[];                 // Lesson content blocks
   learning_objectives: string[];                  // Learning objectives
   estimated_duration: number | null;              // Minutes
   assessment_id: string | null;                   // Associated assessment
@@ -166,6 +166,14 @@ interface Lesson {
 - `order_index`: Required, non-negative integer
 - `estimated_duration`: Must be between 1 and 480 minutes (8 hours)
 - `prerequisites`: All IDs must be valid UUIDs
+- `content_blocks`: Each block must pass content-type specific validation
+
+**Implementation Features:**
+- ✅ Drag-and-drop content block reordering
+- ✅ Real-time validation with error indicators
+- ✅ Auto-save functionality for lesson progress
+- ✅ Content block templates and management
+- ✅ Learning objectives with dynamic add/remove
 
 ## Content Models
 

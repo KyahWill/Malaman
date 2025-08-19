@@ -272,7 +272,7 @@
 									<div class="mt-6">
 										<Button
 											variant="primary"
-											onclick={() => goto(`/courses/${course.id}/lessons/create`)}
+											onclick={() => goto(`/lessons/create?courseId=${course.id}`)}
 										>
 											Add Lesson
 										</Button>
@@ -362,9 +362,9 @@
 								<Button
 									variant="secondary"
 									class="w-full"
-									onclick={() => goto(`/courses/${course.id}/lessons`)}
+									onclick={() => goto(`/lessons/create?courseId=${course.id}`)}
 								>
-									Manage Lessons
+									Add Lesson
 								</Button>
 								<Button
 									variant="secondary"

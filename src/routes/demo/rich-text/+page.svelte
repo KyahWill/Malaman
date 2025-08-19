@@ -111,7 +111,7 @@
 			{:else}
 				<Card class="p-6">
 					<h3 class="text-lg font-medium mb-4">Preview</h3>
-					<RichTextRenderer content={editorContent} />
+					<RichTextRenderer html={editorContent} />
 				</Card>
 			{/if}
 		</div>
