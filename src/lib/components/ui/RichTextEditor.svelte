@@ -48,6 +48,7 @@
 	let imageAlt = $state('');
 	let isYoutubeModalOpen = $state(false);
 	let youtubeUrl = $state('');
+	let showKeyboardHelp = $state(false);
 
 	// Sanitization configuration
 	const sanitizeConfig = {
@@ -62,7 +63,29 @@
 		ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i
 	};
 
+	// Global keyboard event handler for accessibility
+	function handleKeyDown(event: KeyboardEvent) {
+		// Close modals with Escape key
+		if (event.key === 'Escape') {
+			if (isLinkModalOpen) {
+				isLinkModalOpen = false;
+				event.preventDefault();
+			} else if (isImageModalOpen) {
+				isImageModalOpen = false;
+				event.preventDefault();
+			} else if (isYoutubeModalOpen) {
+				isYoutubeModalOpen = false;
+				event.preventDefault();
+			} else if (showKeyboardHelp) {
+				showKeyboardHelp = false;
+				event.preventDefault();
+			}
+		}
+	}
+
 	onMount(() => {
+		document.addEventListener('keydown', handleKeyDown);
+
 		const extensions: any[] = [
 			StarterKit.configure({
 				heading: {
@@ -149,6 +172,8 @@
 		if (editor) {
 			editor.destroy();
 		}
+		// Clean up event listener
+		document.removeEventListener('keydown', handleKeyDown);
 	});
 
 	function sanitizeContent(html: string): string {
@@ -248,6 +273,10 @@
 		editor?.chain().focus().redo().run();
 	}
 
+	function toggleKeyboardHelp() {
+		showKeyboardHelp = !showKeyboardHelp;
+	}
+
 	// Keyboard shortcuts info
 	const keyboardShortcuts = [
 		{ keys: 'Ctrl+B', action: 'Bold' },
@@ -259,7 +288,13 @@
 		{ keys: 'Ctrl+Shift+B', action: 'Blockquote' },
 		{ keys: 'Ctrl+Z', action: 'Undo' },
 		{ keys: 'Ctrl+Y', action: 'Redo' },
-		{ keys: 'Ctrl+K', action: 'Add Link' }
+		{ keys: 'Ctrl+K', action: 'Add Link' },
+		{ keys: 'Ctrl+Shift+1', action: 'Heading 1' },
+		{ keys: 'Ctrl+Shift+2', action: 'Heading 2' },
+		{ keys: 'Ctrl+Shift+3', action: 'Heading 3' },
+		{ keys: 'Ctrl+Alt+0', action: 'Paragraph' },
+		{ keys: 'Tab', action: 'Navigate toolbar' },
+		{ keys: 'Escape', action: 'Close modals' }
 	];
 
 	// Character count
@@ -472,7 +507,7 @@
 			{/if}
 
 			<!-- Undo/Redo -->
-			<div class="flex gap-1">
+			<div class="flex gap-1 border-r border-gray-300 pr-2 mr-2">
 				<button
 					type="button"
 					onclick={undo}
@@ -499,6 +534,21 @@
 					</svg>
 				</button>
 			</div>
+
+			<!-- Help -->
+			<div class="flex gap-1">
+				<button
+					type="button"
+					onclick={toggleKeyboardHelp}
+					class="toolbar-btn"
+					aria-label="Keyboard shortcuts help"
+					title="Keyboard shortcuts help"
+				>
+					<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+						<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+					</svg>
+				</button>
+			</div>
 		</div>
 	{/if}
 
@@ -518,7 +568,7 @@
 
 <!-- Link Modal -->
 {#if isLinkModalOpen}
-	<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" role="dialog" aria-labelledby="link-modal-title">
+	<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" role="dialog" aria-labelledby="link-modal-title" aria-modal="true">
 		<div class="bg-white rounded-lg p-6 w-full max-w-md">
 			<h3 id="link-modal-title" class="text-lg font-semibold mb-4">Add Link</h3>
 			<div class="space-y-4">
@@ -548,7 +598,7 @@
 				<button
 					type="button"
 					onclick={() => { isLinkModalOpen = false; }}
-					class="px-4 py-2 text-gray-600 hover:text-gray-800"
+					class="px-4 py-2 text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
 				>
 					Cancel
 				</button>
@@ -556,7 +606,7 @@
 					type="button"
 					onclick={insertLink}
 					disabled={!linkUrl}
-					class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+					class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
 				>
 					Add Link
 				</button>
@@ -567,7 +617,7 @@
 
 <!-- Image Modal -->
 {#if isImageModalOpen}
-	<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" role="dialog" aria-labelledby="image-modal-title">
+	<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" role="dialog" aria-labelledby="image-modal-title" aria-modal="true">
 		<div class="bg-white rounded-lg p-6 w-full max-w-md">
 			<h3 id="image-modal-title" class="text-lg font-semibold mb-4">Add Image</h3>
 			<div class="space-y-4">
@@ -598,7 +648,7 @@
 				<button
 					type="button"
 					onclick={() => { isImageModalOpen = false; }}
-					class="px-4 py-2 text-gray-600 hover:text-gray-800"
+					class="px-4 py-2 text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
 				>
 					Cancel
 				</button>
@@ -606,7 +656,7 @@
 					type="button"
 					onclick={insertImage}
 					disabled={!imageUrl || !imageAlt}
-					class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+					class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
 				>
 					Add Image
 				</button>
@@ -617,7 +667,7 @@
 
 <!-- YouTube Modal -->
 {#if isYoutubeModalOpen}
-	<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" role="dialog" aria-labelledby="youtube-modal-title">
+	<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" role="dialog" aria-labelledby="youtube-modal-title" aria-modal="true">
 		<div class="bg-white rounded-lg p-6 w-full max-w-md">
 			<h3 id="youtube-modal-title" class="text-lg font-semibold mb-4">Add YouTube Video</h3>
 			<div class="space-y-4">
@@ -637,7 +687,7 @@
 				<button
 					type="button"
 					onclick={() => { isYoutubeModalOpen = false; }}
-					class="px-4 py-2 text-gray-600 hover:text-gray-800"
+					class="px-4 py-2 text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
 				>
 					Cancel
 				</button>
@@ -645,9 +695,35 @@
 					type="button"
 					onclick={insertYoutube}
 					disabled={!youtubeUrl}
-					class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+					class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
 				>
 					Add Video
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- Keyboard Help Modal -->
+{#if showKeyboardHelp}
+	<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" role="dialog" aria-labelledby="keyboard-help-title" aria-modal="true">
+		<div class="bg-white rounded-lg p-6 w-full max-w-md max-h-96 overflow-y-auto">
+			<h3 id="keyboard-help-title" class="text-lg font-semibold mb-4">Keyboard Shortcuts</h3>
+			<div class="space-y-2">
+				{#each keyboardShortcuts as shortcut}
+					<div class="flex justify-between items-center">
+						<span class="text-sm">{shortcut.action}</span>
+						<kbd class="px-2 py-1 bg-gray-100 rounded text-xs font-mono">{shortcut.keys}</kbd>
+					</div>
+				{/each}
+			</div>
+			<div class="flex justify-end mt-6">
+				<button
+					type="button"
+					onclick={() => { showKeyboardHelp = false; }}
+					class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+				>
+					Close
 				</button>
 			</div>
 		</div>

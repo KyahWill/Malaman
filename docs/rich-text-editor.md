@@ -261,6 +261,8 @@ The editor supports standard keyboard shortcuts for efficient editing:
 - Focus management
 - Tab order optimization
 - Escape key handling
+- Built-in keyboard shortcuts help (? button in toolbar)
+- Modal accessibility with proper focus trapping
 
 ### Visual Accessibility
 - High contrast toolbar buttons
