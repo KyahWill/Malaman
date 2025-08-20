@@ -1,38 +1,58 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import type { Assessment, Question, QuestionType } from '$lib/types/database.js';
   import { Button, Input, Label, Card, Modal } from '$lib/components/ui/index.js';
   import { RichTextEditor } from '$lib/components/ui/index.js';
   import { validateAssessment } from '$lib/utils/validation.js';
-  import { showToast } from '$lib/stores/toast.js';
+  import { toastHelpers as toast } from '$lib/stores/toast.js';
 
   // Props
-  export let assessment: Partial<Assessment> = {
-    title: '',
-    description: '',
-    questions: [],
-    is_mandatory: true,
-    minimum_passing_score: 70,
-    max_attempts: null,
-    time_limit: null,
-    ai_generated: false,
-    source_content_ids: []
-  };
-  export let lessonId: string | null = null;
-  export let courseId: string | null = null;
-  export let isEditing = false;
+  let {
+    assessment = {
+      title: '',
+      description: '',
+      questions: [],
+      is_mandatory: true,
+      minimum_passing_score: 70,
+      max_attempts: null,
+      time_limit: null,
+      ai_generated: false,
+      source_content_ids: []
+    },
+    lessonId = null,
+    courseId = null,
+    isEditing = false,
+    onSave,
+    onCancel,
+    onPreview
+  }: {
+    assessment?: Partial<Assessment>;
+    lessonId?: string | null;
+    courseId?: string | null;
+    isEditing?: boolean;
+    onSave?: (assessment: Assessment) => void;
+    onCancel?: () => void;
+    onPreview?: (assessment: Assessment) => void;
+  } = $props();
 
-  const dispatch = createEventDispatcher<{
-    save: Assessment;
-    cancel: void;
-    preview: Assessment;
-  }>();
+  // Make assessment reactive
+  let assessmentState = $state(assessment);
 
   // State
-  let showQuestionModal = false;
-  let editingQuestion: Question | null = null;
-  let editingQuestionIndex = -1;
-  let validationErrors: string[] = [];
+  let showQuestionModal = $state(false);
+  let showAIGenerationModal = $state(false);
+  let editingQuestion = $state<Question | null>(null);
+  let editingQuestionIndex = $state(-1);
+  let validationErrors = $state<string[]>([]);
+  let isGeneratingAI = $state(false);
+  let aiGenerationOptions = $state({
+    difficulty: 'intermediate' as 'beginner' | 'intermediate' | 'advanced',
+    questionTypes: ['multiple_choice', 'true_false', 'short_answer'] as QuestionType[],
+    questionCount: 10,
+    isMandatory: true,
+    minimumPassingScore: 70,
+    maxAttempts: null as number | null,
+    timeLimit: null as number | null
+  });
 
   // Question types configuration
   const questionTypes: { value: QuestionType; label: string; description: string }[] = [
@@ -59,13 +79,13 @@
   ];
 
   // Initialize assessment properties
-  $: {
-    if (lessonId) assessment.lesson_id = lessonId;
-    if (courseId) assessment.course_id = courseId;
-  }
+  $effect(() => {
+    if (lessonId) assessmentState.lesson_id = lessonId;
+    if (courseId) assessmentState.course_id = courseId;
+  });
 
   // Calculate total points
-  $: totalPoints = assessment.questions?.reduce((sum, q) => sum + q.points, 0) || 0;
+  let totalPoints = $derived(assessmentState.questions?.reduce((sum, q) => sum + q.points, 0) || 0);
 
   function addQuestion() {
     editingQuestion = {
@@ -94,7 +114,7 @@
 
     const validation = validateQuestion(editingQuestion);
     if (!validation.isValid) {
-      showToast(validation.errors.join(', '), 'error');
+      toast.error(validation.errors.join(', '));
       return;
     }
 
@@ -154,25 +174,133 @@
   }
 
   function handleSave() {
-    const validation = validateAssessment(assessment as Assessment);
+    const validation = validateAssessment(assessmentState as Assessment);
     if (!validation.isValid) {
-      validationErrors = validation.errors;
-      showToast('Please fix validation errors before saving', 'error');
+      validationErrors = validation.errors.map(e => typeof e === 'string' ? e : e.message || 'Validation error');
+      toast.error('Please fix validation errors before saving');
       return;
     }
 
     validationErrors = [];
-    dispatch('save', assessment as Assessment);
+    onSave?.(assessmentState as Assessment);
   }
 
   function handlePreview() {
-    const validation = validateAssessment(assessment as Assessment);
+    const validation = validateAssessment(assessmentState as Assessment);
     if (!validation.isValid) {
-      showToast('Please fix validation errors before previewing', 'error');
+      toast.error('Please fix validation errors before previewing');
       return;
     }
 
-    dispatch('preview', assessment as Assessment);
+    onPreview?.(assessmentState as Assessment);
+  }
+
+  function openAIGenerationModal() {
+    showAIGenerationModal = true;
+  }
+
+  function closeAIGenerationModal() {
+    showAIGenerationModal = false;
+  }
+
+  async function generateAIAssessment() {
+    if (!lessonId && !courseId) {
+      toast.error('No content available for AI generation');
+      return;
+    }
+
+    isGeneratingAI = true;
+
+    try {
+      const response = await fetch('/api/ai/generate-assessment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          lessonId,
+          courseId,
+          options: aiGenerationOptions
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          toast.error(`AI service rate limit exceeded. ${result.retryAfter ? `Try again in ${result.retryAfter} seconds.` : ''}`);
+        } else if (response.status === 503) {
+          toast.error('AI service temporarily unavailable. Using fallback generation.');
+        } else {
+          toast.error(result.error || 'Failed to generate assessment');
+        }
+        
+        if (!result.fallbackAvailable) {
+          return;
+        }
+      }
+
+      if (result.success && result.assessment) {
+        // Merge AI-generated data with current assessment
+        assessment = {
+          ...assessment,
+          ...result.assessment,
+          // Preserve user-set values
+          title: assessment.title || result.assessment.title,
+          description: assessment.description || result.assessment.description
+        };
+
+        toast.success(`Assessment generated successfully! ${result.metadata.questionsGenerated} questions created from ${result.metadata.contentAnalyzed} content blocks.`);
+        closeAIGenerationModal();
+      }
+    } catch (error) {
+      console.error('AI generation error:', error);
+      toast.error('Failed to generate assessment. Please try again.');
+    } finally {
+      isGeneratingAI = false;
+    }
+  }
+
+  async function regenerateQuestion(questionIndex: number) {
+    if (!assessment.questions || questionIndex >= assessment.questions.length) {
+      toast.error('Question not found');
+      return;
+    }
+
+    const originalQuestion = assessment.questions[questionIndex];
+    
+    try {
+      const response = await fetch('/api/ai/regenerate-question', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          assessmentId: assessment.id,
+          questionIndex,
+          options: {
+            difficulty: aiGenerationOptions.difficulty,
+            reason: 'Manual regeneration request'
+          }
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        toast.error(result.error || 'Failed to regenerate question');
+        return;
+      }
+
+      if (result.success && result.question) {
+        // Replace the question at the specified index
+        assessment.questions[questionIndex] = result.question;
+        toast.success('Question regenerated successfully!');
+      }
+    } catch (error) {
+      console.error('Question regeneration error:', error);
+      toast.error('Failed to regenerate question. Please try again.');
+    }
   }
 
   // Question type specific handlers
@@ -228,7 +356,8 @@
         <Label for="title">Assessment Title *</Label>
         <Input
           id="title"
-          bind:value={assessment.title}
+          value={assessment.title}
+          oninput={(e) => assessmentState.title = (e.target as HTMLInputElement).value}
           placeholder="Enter assessment title"
           required
         />
@@ -241,7 +370,8 @@
           type="number"
           min="1"
           max="100"
-          bind:value={assessment.minimum_passing_score}
+          value={assessment.minimum_passing_score?.toString()}
+          oninput={(e) => assessment.minimum_passing_score = parseInt(e.target.value)}
           required
         />
       </div>
@@ -250,7 +380,8 @@
     <div class="mb-6">
       <Label for="description">Description</Label>
       <RichTextEditor
-        bind:content={assessment.description}
+        content={assessment.description || ''}
+        onContentChange={(content) => assessment.description = content}
         placeholder="Describe what this assessment covers..."
         class="min-h-[100px]"
       />
@@ -264,7 +395,8 @@
           id="max-attempts"
           type="number"
           min="1"
-          bind:value={assessment.max_attempts}
+          value={assessment.max_attempts?.toString() || ''}
+          oninput={(e) => assessment.max_attempts = e.target.value ? parseInt(e.target.value) : null}
           placeholder="Unlimited"
         />
         <p class="text-sm text-gray-600 mt-1">Leave empty for unlimited attempts</p>
@@ -276,7 +408,8 @@
           id="time-limit"
           type="number"
           min="1"
-          bind:value={assessment.time_limit}
+          value={assessment.time_limit?.toString() || ''}
+          oninput={(e) => assessment.time_limit = e.target.value ? parseInt(e.target.value) : null}
           placeholder="No limit"
         />
         <p class="text-sm text-gray-600 mt-1">Leave empty for no time limit</p>
@@ -286,7 +419,8 @@
         <input
           id="mandatory"
           type="checkbox"
-          bind:checked={assessment.is_mandatory}
+          checked={assessment.is_mandatory}
+          onchange={(e) => assessment.is_mandatory = e.target.checked}
           class="rounded border-gray-300"
         />
         <Label for="mandatory">Mandatory Assessment</Label>
@@ -302,10 +436,28 @@
         <p class="text-gray-600">
           {assessment.questions?.length || 0} questions • {totalPoints} total points
         </p>
+        {#if assessment.ai_generated}
+          <p class="text-sm text-blue-600 flex items-center mt-1">
+            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            AI Generated Assessment
+          </p>
+        {/if}
       </div>
-      <Button on:click={addQuestion} variant="primary">
-        Add Question
-      </Button>
+      <div class="flex space-x-2">
+        {#if (lessonId || courseId) && (!assessment.questions || assessment.questions.length === 0)}
+          <Button onclick={openAIGenerationModal} variant="outline" class="bg-blue-50 text-blue-700 hover:bg-blue-100">
+            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+            </svg>
+            Generate with AI
+          </Button>
+        {/if}
+        <Button onclick={addQuestion} variant="primary">
+          Add Question
+        </Button>
+      </div>
     </div>
 
     <!-- Questions List -->
@@ -348,14 +500,27 @@
 
               <div class="flex space-x-2">
                 <Button
-                  on:click={() => editQuestion(question, index)}
+                  onclick={() => editQuestion(question, index)}
                   variant="outline"
                   size="sm"
                 >
                   Edit
                 </Button>
+                {#if assessment.ai_generated}
+                  <Button
+                    onclick={() => regenerateQuestion(index)}
+                    variant="outline"
+                    size="sm"
+                    class="text-blue-600 hover:text-blue-700"
+                    title="Regenerate this question with AI"
+                  >
+                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"/>
+                    </svg>
+                  </Button>
+                {/if}
                 <Button
-                  on:click={() => deleteQuestion(index)}
+                  onclick={() => deleteQuestion(index)}
                   variant="outline"
                   size="sm"
                   class="text-red-600 hover:text-red-700"
@@ -377,25 +542,215 @@
 
   <!-- Actions -->
   <div class="flex justify-between">
-    <Button on:click={() => dispatch('cancel')} variant="outline">
+    <Button onclick={() => onCancel?.()} variant="outline">
       Cancel
     </Button>
 
     <div class="space-x-2">
-      <Button on:click={handlePreview} variant="outline">
+      <Button onclick={handlePreview} variant="outline">
         Preview
       </Button>
-      <Button on:click={handleSave} variant="primary">
+      <Button onclick={handleSave} variant="primary">
         {isEditing ? 'Update Assessment' : 'Create Assessment'}
       </Button>
     </div>
   </div>
 </div>
 
+<!-- AI Generation Modal -->
+{#if showAIGenerationModal}
+  <Modal
+    open={showAIGenerationModal}
+    title="Generate Assessment with AI"
+    size="lg"
+    onClose={closeAIGenerationModal}
+  >
+    <div class="space-y-6">
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div class="flex items-start">
+          <svg class="w-5 h-5 text-blue-600 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"/>
+          </svg>
+          <div>
+            <h4 class="text-blue-800 font-medium">AI Assessment Generation</h4>
+            <p class="text-blue-700 text-sm mt-1">
+              AI will analyze your {lessonId ? 'lesson' : 'course'} content and generate relevant questions automatically. 
+              You can review and edit all questions before saving.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generation Options -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label for="ai-difficulty">Difficulty Level</Label>
+          <select
+            id="ai-difficulty"
+            value={aiGenerationOptions.difficulty}
+            onchange={(e) => aiGenerationOptions.difficulty = e.target.value}
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+        </div>
+
+        <div>
+          <Label for="ai-question-count">Number of Questions</Label>
+          <Input
+            id="ai-question-count"
+            type="number"
+            min="1"
+            max="50"
+            value={aiGenerationOptions.questionCount.toString()}
+            oninput={(e) => aiGenerationOptions.questionCount = parseInt(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <!-- Question Types -->
+      <div>
+        <Label>Question Types</Label>
+        <div class="grid grid-cols-2 gap-2 mt-2">
+          <label class="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={aiGenerationOptions.questionTypes.includes('multiple_choice')}
+              onchange={(e) => {
+                if (e.target.checked) {
+                  aiGenerationOptions.questionTypes = [...aiGenerationOptions.questionTypes, 'multiple_choice'];
+                } else {
+                  aiGenerationOptions.questionTypes = aiGenerationOptions.questionTypes.filter(t => t !== 'multiple_choice');
+                }
+              }}
+              class="rounded border-gray-300"
+            />
+            <span class="text-sm">Multiple Choice</span>
+          </label>
+          <label class="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={aiGenerationOptions.questionTypes.includes('true_false')}
+              onchange={(e) => {
+                if (e.target.checked) {
+                  aiGenerationOptions.questionTypes = [...aiGenerationOptions.questionTypes, 'true_false'];
+                } else {
+                  aiGenerationOptions.questionTypes = aiGenerationOptions.questionTypes.filter(t => t !== 'true_false');
+                }
+              }}
+              class="rounded border-gray-300"
+            />
+            <span class="text-sm">True/False</span>
+          </label>
+          <label class="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={aiGenerationOptions.questionTypes.includes('short_answer')}
+              onchange={(e) => {
+                if (e.target.checked) {
+                  aiGenerationOptions.questionTypes = [...aiGenerationOptions.questionTypes, 'short_answer'];
+                } else {
+                  aiGenerationOptions.questionTypes = aiGenerationOptions.questionTypes.filter(t => t !== 'short_answer');
+                }
+              }}
+              class="rounded border-gray-300"
+            />
+            <span class="text-sm">Short Answer</span>
+          </label>
+          <label class="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={aiGenerationOptions.questionTypes.includes('essay')}
+              onchange={(e) => {
+                if (e.target.checked) {
+                  aiGenerationOptions.questionTypes = [...aiGenerationOptions.questionTypes, 'essay'];
+                } else {
+                  aiGenerationOptions.questionTypes = aiGenerationOptions.questionTypes.filter(t => t !== 'essay');
+                }
+              }}
+              class="rounded border-gray-300"
+            />
+            <span class="text-sm">Essay</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Assessment Settings -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <Label for="ai-passing-score">Passing Score (%)</Label>
+          <Input
+            id="ai-passing-score"
+            type="number"
+            min="1"
+            max="100"
+            value={aiGenerationOptions.minimumPassingScore.toString()}
+            oninput={(e) => aiGenerationOptions.minimumPassingScore = parseInt(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <Label for="ai-max-attempts">Max Attempts</Label>
+          <Input
+            id="ai-max-attempts"
+            type="number"
+            min="1"
+            value={aiGenerationOptions.maxAttempts?.toString() || ''}
+            oninput={(e) => aiGenerationOptions.maxAttempts = e.target.value ? parseInt(e.target.value) : null}
+            placeholder="Unlimited"
+          />
+        </div>
+
+        <div>
+          <Label for="ai-time-limit">Time Limit (min)</Label>
+          <Input
+            id="ai-time-limit"
+            type="number"
+            min="1"
+            value={aiGenerationOptions.timeLimit?.toString() || ''}
+            oninput={(e) => aiGenerationOptions.timeLimit = e.target.value ? parseInt(e.target.value) : null}
+            placeholder="No limit"
+          />
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <input
+          id="ai-mandatory"
+          type="checkbox"
+          checked={aiGenerationOptions.isMandatory}
+          onchange={(e) => aiGenerationOptions.isMandatory = e.target.checked}
+          class="rounded border-gray-300"
+        />
+        <Label for="ai-mandatory">Mandatory Assessment</Label>
+      </div>
+    </div>
+
+    <div slot="footer" class="flex justify-end space-x-2">
+      <Button onclick={closeAIGenerationModal} variant="outline" disabled={isGeneratingAI}>
+        Cancel
+      </Button>
+      <Button onclick={generateAIAssessment} variant="primary" disabled={isGeneratingAI || aiGenerationOptions.questionTypes.length === 0}>
+        {#if isGeneratingAI}
+          <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Generating...
+        {:else}
+          Generate Assessment
+        {/if}
+      </Button>
+    </div>
+  </Modal>
+{/if}
+
 <!-- Question Modal -->
 {#if showQuestionModal && editingQuestion}
   <Modal
-    isOpen={showQuestionModal}
+    open={showQuestionModal}
     onClose={closeQuestionModal}
     title={editingQuestionIndex >= 0 ? 'Edit Question' : 'Add Question'}
     size="lg"

@@ -323,47 +323,133 @@ Please create questions that:
 
   private generateFallbackAssessment(input: AssessmentGenerationInput): any {
     const questions = [];
-    const questionCount = Math.min(input.questionCount, 5); // Limit fallback questions
+    const questionCount = Math.min(input.questionCount, 10);
 
-    for (let i = 0; i < questionCount; i++) {
-      if (input.questionTypes.includes('multiple_choice')) {
-        questions.push({
+    // Generate a variety of sample questions based on requested types
+    const sampleQuestions = {
+      multiple_choice: [
+        {
           type: 'multiple_choice',
-          question_text: `Based on the learning content, which statement is most accurate?`,
+          question_text: 'Which of the following best describes effective learning?',
           options: [
-            'Understanding the concepts is important',
-            'Memorizing details is sufficient',
-            'Practice is unnecessary',
-            'Theory and practice are unrelated'
+            'Memorizing facts without understanding context',
+            'Understanding concepts and applying them to new situations',
+            'Reading material once and moving on',
+            'Focusing only on test preparation'
           ],
-          correct_answer: 'Understanding the concepts is important',
-          explanation: 'Conceptual understanding forms the foundation for effective learning.',
+          correct_answer: 'Understanding concepts and applying them to new situations',
+          explanation: 'Effective learning involves deep understanding and the ability to transfer knowledge to new contexts.',
           difficulty_level: 3,
-          topics: ['General Learning'],
+          topics: ['Learning Theory', 'Educational Psychology'],
           points: 10
-        });
-      }
-
-      if (input.questionTypes.includes('true_false') && questions.length < questionCount) {
-        questions.push({
-          type: 'true_false',
-          question_text: 'Applying learned concepts to new situations helps reinforce understanding.',
-          correct_answer: 'true',
-          explanation: 'Application and practice help solidify learning and improve retention.',
+        },
+        {
+          type: 'multiple_choice',
+          question_text: 'What is the most important factor in knowledge retention?',
+          options: [
+            'Repetition without understanding',
+            'Active engagement and practice',
+            'Passive reading',
+            'Cramming before tests'
+          ],
+          correct_answer: 'Active engagement and practice',
+          explanation: 'Active learning strategies that involve practice and engagement lead to better retention than passive methods.',
           difficulty_level: 2,
-          topics: ['Learning Application'],
+          topics: ['Memory', 'Learning Strategies'],
           points: 10
-        });
+        }
+      ],
+      true_false: [
+        {
+          type: 'true_false',
+          question_text: 'Spaced repetition is more effective than massed practice for long-term retention.',
+          correct_answer: 'true',
+          explanation: 'Research consistently shows that distributing practice over time (spaced repetition) leads to better long-term retention than concentrated practice sessions.',
+          difficulty_level: 2,
+          topics: ['Memory', 'Study Techniques'],
+          points: 5
+        },
+        {
+          type: 'true_false',
+          question_text: 'All students learn best using the same teaching methods.',
+          correct_answer: 'false',
+          explanation: 'Students have different learning preferences, backgrounds, and needs, requiring varied instructional approaches for optimal learning.',
+          difficulty_level: 1,
+          topics: ['Individual Differences', 'Teaching Methods'],
+          points: 5
+        }
+      ],
+      short_answer: [
+        {
+          type: 'short_answer',
+          question_text: 'Explain the difference between surface learning and deep learning approaches.',
+          correct_answer: 'Surface learning focuses on memorization and reproduction of information, while deep learning involves understanding concepts, making connections, and applying knowledge to new situations.',
+          explanation: 'Deep learning is characterized by seeking meaning, relating ideas, and critical thinking, whereas surface learning is more about rote memorization without understanding.',
+          difficulty_level: 3,
+          topics: ['Learning Approaches', 'Educational Theory'],
+          points: 15
+        },
+        {
+          type: 'short_answer',
+          question_text: 'What are two key benefits of formative assessment in education?',
+          correct_answer: 'Formative assessment provides ongoing feedback to improve learning and helps instructors adjust their teaching methods based on student understanding.',
+          explanation: 'Formative assessment serves dual purposes: it helps students identify areas for improvement and guides instructors in modifying their teaching strategies.',
+          difficulty_level: 2,
+          topics: ['Assessment', 'Feedback'],
+          points: 10
+        }
+      ],
+      essay: [
+        {
+          type: 'essay',
+          question_text: 'Discuss the role of metacognition in effective learning. Include specific strategies that learners can use to develop metacognitive skills.',
+          correct_answer: 'Metacognition involves awareness and understanding of one\'s own thought processes. Effective strategies include self-questioning, reflection on learning progress, planning study approaches, monitoring comprehension, and evaluating learning outcomes. Students can develop these skills through journaling, self-assessment, goal setting, and regular reflection on their learning strategies.',
+          explanation: 'This essay should demonstrate understanding of metacognition as "thinking about thinking" and provide concrete examples of metacognitive strategies that enhance learning effectiveness.',
+          difficulty_level: 4,
+          topics: ['Metacognition', 'Learning Strategies', 'Self-Regulation'],
+          points: 25
+        }
+      ]
+    };
+
+    // Select questions based on requested types
+    for (const questionType of input.questionTypes) {
+      if (sampleQuestions[questionType] && questions.length < questionCount) {
+        const availableQuestions = sampleQuestions[questionType];
+        const questionsToAdd = Math.min(
+          availableQuestions.length,
+          Math.ceil(questionCount / input.questionTypes.length)
+        );
+        
+        for (let i = 0; i < questionsToAdd && questions.length < questionCount; i++) {
+          questions.push({
+            ...availableQuestions[i],
+            id: crypto.randomUUID()
+          });
+        }
       }
     }
 
+    // Fill remaining slots with multiple choice if needed
+    while (questions.length < questionCount && sampleQuestions.multiple_choice.length > 0) {
+      const randomIndex = Math.floor(Math.random() * sampleQuestions.multiple_choice.length);
+      questions.push({
+        ...sampleQuestions.multiple_choice[randomIndex],
+        id: crypto.randomUUID()
+      });
+    }
+
     return {
-      questions,
+      questions: questions.slice(0, questionCount),
       assessment_metadata: {
-        total_points: questions.length * 10,
-        estimated_time: questions.length * 3,
-        difficulty_distribution: { easy: 1, medium: questions.length - 1, hard: 0 },
-        topic_coverage: ['General Learning']
+        total_points: questions.reduce((sum, q) => sum + q.points, 0),
+        estimated_time: questions.length * 4, // 4 minutes per question average
+        difficulty_distribution: {
+          easy: questions.filter(q => q.difficulty_level <= 2).length,
+          medium: questions.filter(q => q.difficulty_level === 3).length,
+          hard: questions.filter(q => q.difficulty_level >= 4).length
+        },
+        topic_coverage: [...new Set(questions.flatMap(q => q.topics))]
       }
     };
   }
