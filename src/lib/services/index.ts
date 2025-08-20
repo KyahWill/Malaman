@@ -22,5 +22,6 @@ export { ContentSanitizationService } from './contentSanitization.js';
 // Media services
 export { MediaStorageService } from './mediaStorage.js';
 
-// Additional services will be exported here as they are created
-// export { AIService } from './ai.js';
+// AI services
+export { AIService, getAIService } from './ai/index.js';
+export type * from './ai/types.js';

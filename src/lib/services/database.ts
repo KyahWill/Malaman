@@ -722,6 +722,47 @@ export class AssessmentService {
       throw handleDatabaseError(error, 'Failed to delete assessment');
     }
   }
+
+  /**
+   * Get assessments by instructor
+   */
+  static async getByInstructor(instructorId: string): Promise<Assessment[]> {
+    try {
+      const { data, error } = await supabase
+        .from('assessments')
+        .select(`
+          *,
+          lessons!assessments_lesson_id_fkey(
+            course_id,
+            courses!lessons_course_id_fkey(instructor_id)
+          ),
+          courses!assessments_course_id_fkey(instructor_id)
+        `)
+        .or(`lessons.courses.instructor_id.eq.${instructorId},courses.instructor_id.eq.${instructorId}`);
+
+      if (error) throw error;
+      return data.map(transformAssessment);
+    } catch (error) {
+      throw handleDatabaseError(error, 'Failed to fetch instructor assessments');
+    }
+  }
+
+  /**
+   * Get all assessments (admin only)
+   */
+  static async getAll(): Promise<Assessment[]> {
+    try {
+      const { data, error } = await supabase
+        .from('assessments')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data.map(transformAssessment);
+    } catch (error) {
+      throw handleDatabaseError(error, 'Failed to fetch all assessments');
+    }
+  }
 }
 
 // ============================================================================
