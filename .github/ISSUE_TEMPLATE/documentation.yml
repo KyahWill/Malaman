@@ -1,0 +1,185 @@
+name: 📚 Documentation Issue
+description: Report missing, incorrect, or unclear documentation
+title: "[Docs]: "
+labels: ["documentation", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping improve our documentation! Clear documentation is essential for a successful open source project.
+
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: Documentation Type
+      description: What type of documentation needs attention?
+      options:
+        - API Documentation
+        - User Guide/Tutorial
+        - Developer Guide
+        - Installation/Setup
+        - Configuration
+        - Troubleshooting
+        - Code Comments
+        - README
+        - Contributing Guidelines
+        - Architecture/Design
+        - Accessibility Guide
+        - Security Documentation
+        - Other (please specify)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue Type
+      description: What kind of documentation issue is this?
+      options:
+        - Missing Documentation
+        - Incorrect Information
+        - Unclear/Confusing Content
+        - Outdated Information
+        - Broken Links
+        - Formatting Issues
+        - Translation Needed
+        - Accessibility Issues
+        - Other (please specify)
+    validations:
+      required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: Documentation Location
+      description: Where is this documentation located? (URL, file path, or section name)
+      placeholder: e.g., docs/api.md, /getting-started page, README.md section "Installation"
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-content
+    attributes:
+      label: Current Content
+      description: What does the current documentation say? (copy/paste the relevant section)
+      placeholder: Paste the current documentation content here, or write "Missing" if no documentation exists
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-content
+    attributes:
+      label: Expected/Improved Content
+      description: What should the documentation say instead? Provide your suggested improvement.
+      placeholder: |
+        Provide your suggested content or improvements:
+        - What information is missing?
+        - How should it be corrected?
+        - What would make it clearer?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: audience
+    attributes:
+      label: Target Audience
+      description: Who is the primary audience for this documentation?
+      options:
+        - End Users (Students/Instructors)
+        - Developers/Contributors
+        - System Administrators
+        - API Users/Integrators
+        - New Contributors
+        - All Users
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is fixing this documentation?
+      options:
+        - Critical (Blocks users from completing essential tasks)
+        - High (Causes significant confusion or frustration)
+        - Medium (Improvement would be helpful)
+        - Low (Minor enhancement)
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Provide any additional context that would help improve this documentation
+      placeholder: |
+        Additional information:
+        - What were you trying to accomplish when you found this issue?
+        - What confusion or problems did this cause?
+        - Are there related documentation sections that should be updated?
+        - Any examples or screenshots that would be helpful?
+
+  - type: textarea
+    id: user-story
+    attributes:
+      label: User Story
+      description: Describe the user journey that led to this documentation issue
+      placeholder: |
+        Example:
+        "As a new developer trying to set up the project, I followed the installation guide but got stuck at step 3 because the command shown doesn't work on Windows. I expected to find Windows-specific instructions but they weren't there."
+
+  - type: checkboxes
+    id: suggestions
+    attributes:
+      label: Improvement Suggestions
+      description: What would make this documentation better? (check all that apply)
+      options:
+        - label: Add code examples
+        - label: Add screenshots or diagrams
+        - label: Add step-by-step instructions
+        - label: Add troubleshooting section
+        - label: Add links to related documentation
+        - label: Improve formatting/structure
+        - label: Add accessibility information
+        - label: Add mobile-specific information
+        - label: Add video tutorial
+        - label: Add FAQ section
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Are you interested in helping improve this documentation?
+      options:
+        - label: I can write the improved documentation
+        - label: I can provide technical review
+        - label: I can create screenshots/diagrams
+        - label: I can test the documentation with new users
+        - label: I can help with translation
+
+  - type: textarea
+    id: related-issues
+    attributes:
+      label: Related Issues
+      description: Are there any related issues, pull requests, or discussions?
+      placeholder: |
+        Link any related:
+        - GitHub issues
+        - Pull requests
+        - Discussion threads
+        - External resources
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Please confirm the following
+      options:
+        - label: I have searched existing issues to ensure this documentation issue hasn't been reported before
+          required: true
+        - label: I have provided specific suggestions for improvement
+          required: true
+        - label: I understand that documentation improvements help the entire community
+          required: true

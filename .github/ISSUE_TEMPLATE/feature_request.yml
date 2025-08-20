@@ -1,0 +1,210 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting a new feature! Please provide as much detail as possible to help us understand your request.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Feature Summary
+      description: A brief, clear summary of the feature you'd like to see
+      placeholder: Summarize the feature in 1-2 sentences
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature Category
+      description: What category does this feature fall into?
+      options:
+        - User Interface/Experience
+        - AI/Personalization
+        - Assessment System
+        - Course Management
+        - Student Dashboard
+        - Instructor Tools
+        - Analytics/Reporting
+        - Accessibility
+        - Performance
+        - Security/Privacy
+        - API/Integration
+        - Mobile Experience
+        - Documentation
+        - Developer Experience
+        - Other (please specify in description)
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve? What pain point are you experiencing?
+      placeholder: |
+        Describe the problem or limitation you're facing:
+        - What are you trying to accomplish?
+        - What's currently preventing you from doing this?
+        - How does this impact your workflow or user experience?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your ideal solution to this problem
+      placeholder: |
+        Describe how you envision this feature working:
+        - What would the user interface look like?
+        - How would users interact with this feature?
+        - What would be the expected behavior?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Solutions
+      description: Have you considered any alternative approaches or workarounds?
+      placeholder: |
+        Describe any alternatives you've considered:
+        - Other ways to solve this problem
+        - Existing workarounds you're using
+        - Similar features in other tools
+
+  - type: dropdown
+    id: user-role
+    attributes:
+      label: Primary User Role
+      description: Which user role would primarily benefit from this feature?
+      options:
+        - Student
+        - Instructor
+        - Administrator
+        - All Users
+        - Developers/Contributors
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority Level
+      description: How important is this feature to you?
+      options:
+        - Critical (Blocking major use case)
+        - High (Significantly improves experience)
+        - Medium (Nice to have improvement)
+        - Low (Minor enhancement)
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Use Cases
+      description: Provide specific examples of how this feature would be used
+      placeholder: |
+        Example scenarios:
+        1. As a [role], I want to [action] so that [benefit]
+        2. When [situation], I need to [action] to achieve [goal]
+        3. In the context of [scenario], this feature would help by [benefit]
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What would need to be true for this feature to be considered complete?
+      placeholder: |
+        Define what "done" looks like:
+        - [ ] Specific functionality requirement 1
+        - [ ] Specific functionality requirement 2
+        - [ ] Performance/accessibility requirements
+        - [ ] Integration requirements
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Mockups or Examples
+      description: Any visual mockups, wireframes, or examples from other tools?
+      placeholder: |
+        Attach or link to:
+        - UI mockups or wireframes
+        - Screenshots from other tools
+        - Flow diagrams
+        - Any visual references
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Estimated Complexity
+      description: How complex do you think this feature would be to implement?
+      options:
+        - Simple (Small UI change, minimal logic)
+        - Medium (New component or moderate logic)
+        - Complex (Major feature, multiple components)
+        - Very Complex (Significant architecture changes)
+        - Not Sure
+
+  - type: textarea
+    id: technical-considerations
+    attributes:
+      label: Technical Considerations
+      description: Any technical aspects, constraints, or requirements to consider?
+      placeholder: |
+        Consider:
+        - Performance implications
+        - Security/privacy concerns
+        - Accessibility requirements
+        - Mobile compatibility
+        - API changes needed
+        - Database schema changes
+        - Third-party integrations
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Are you interested in contributing to this feature?
+      options:
+        - label: I would like to work on implementing this feature
+        - label: I can help with design/mockups
+        - label: I can help with testing
+        - label: I can help with documentation
+        - label: I'm available for consultation/feedback
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other information that would be helpful
+      placeholder: |
+        Additional details:
+        - Links to related issues or discussions
+        - Research or references
+        - Timeline considerations
+        - Budget/resource constraints
+        - Regulatory/compliance requirements
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Please confirm the following
+      options:
+        - label: I have searched existing issues to ensure this feature hasn't been requested before
+          required: true
+        - label: I have provided clear use cases and acceptance criteria
+          required: true
+        - label: I understand that feature requests are prioritized based on community needs and available resources
+          required: true

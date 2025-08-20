@@ -2,6 +2,11 @@
 
 An open-source, AI-powered Learning Management System built with Svelte 5, SvelteKit 2, and Supabase. This system creates personalized learning roadmaps based on individual students' prior knowledge and learning progress, supporting various media types and assessment-driven progression.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub Stars](https://img.shields.io/github/stars/personalized-lms/personalized-lms?style=social)](https://github.com/personalized-lms/personalized-lms/stargazers)
+[![Discord](https://img.shields.io/discord/DISCORD_ID?color=7289da&label=Discord&logo=discord&logoColor=white)](https://discord.gg/personalized-lms)
+[![Contributors](https://img.shields.io/github/contributors/personalized-lms/personalized-lms)](https://github.com/personalized-lms/personalized-lms/graphs/contributors)
+
 ## 🚀 Features
 
 - **AI-Powered Personalization**: Intelligent learning roadmaps tailored to each student's knowledge profile
@@ -289,29 +294,98 @@ npm run preview
 - Supabase Edge Functions
 - Traditional VPS with Node.js
 
-## 🤝 Contributing
+## 🤝 Community & Contributing
 
-This is an open-source project welcoming community contributions. Please read our contribution guidelines before submitting pull requests.
+### Join Our Community
+
+We're building an inclusive, welcoming community of educators, developers, and learners!
+
+- 💬 **Discord**: [Join our Discord server](https://discord.gg/personalized-lms) for real-time discussions
+- 🗣️ **GitHub Discussions**: [Ask questions and share ideas](https://github.com/personalized-lms/personalized-lms/discussions)
+- 📧 **Mailing List**: Subscribe to our newsletter for updates
+- 🐦 **Twitter**: Follow [@PersonalizedLMS](https://twitter.com/PersonalizedLMS) for news
+
+### Contributing
+
+We welcome contributions from everyone! Here's how you can help:
+
+#### 🚀 Quick Contributions
+- ⭐ Star the repository
+- 🐛 Report bugs using our [issue templates](.github/ISSUE_TEMPLATE/)
+- 💡 Suggest features
+- 📖 Improve documentation
+- 🌍 Help with translations
+
+#### 🔧 Code Contributions
+- 🧪 Write tests
+- 🎨 Improve UI/UX
+- ♿ Enhance accessibility
+- 🤖 Improve AI algorithms
+- 🔒 Strengthen security
+
+#### 👥 Community Contributions
+- 📝 Write tutorials and blog posts
+- 🎤 Speak at conferences
+- 🏫 Use in educational settings
+- 🤝 Mentor new contributors
 
 ### Development Workflow
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes with proper tests
-4. Submit a pull request with detailed description
+1. Read our [Contributing Guide](CONTRIBUTING.md)
+2. Check our [Code of Conduct](CODE_OF_CONDUCT.md)
+3. Fork the repository
+4. Create a feature branch
+5. Make your changes with proper tests
+6. Submit a pull request with detailed description
 
-### Code of Conduct
-Please be respectful and inclusive in all interactions with the community.
+### Recognition
+We celebrate our contributors! Check out our:
+- [Contributors Hall of Fame](CONTRIBUTORS.md)
+- [Monthly Contributor Spotlights](https://blog.personalized-lms.org/contributors)
+- [Conference Speaking Opportunities](https://personalized-lms.org/speaking)
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+### What this means:
+- ✅ **Commercial Use**: Use in commercial projects
+- ✅ **Modification**: Modify the source code
+- ✅ **Distribution**: Distribute original or modified versions
+- ✅ **Private Use**: Use privately without restrictions
+- ⚠️ **Attribution**: Include copyright notice and license
 
-- Documentation: [Project Wiki](link-to-wiki)
-- Issues: [GitHub Issues](link-to-issues)
-- Discussions: [GitHub Discussions](link-to-discussions)
-- Community: [Discord/Slack](link-to-community)
+## 🔒 Security
+
+Security is a top priority. We:
+- 🛡️ Follow security best practices
+- 🔍 Conduct regular security audits
+- 📢 Maintain a responsible disclosure policy
+- 🏆 Recognize security researchers
+
+Found a security issue? Please report it responsibly through our [Security Policy](SECURITY.md).
+
+## 🆘 Support & Resources
+
+### Getting Help
+- 📚 **Documentation**: [Comprehensive guides and API docs](docs/)
+- 🐛 **Issues**: [Report bugs on GitHub Issues](https://github.com/personalized-lms/personalized-lms/issues)
+- 💬 **Discussions**: [Community Q&A](https://github.com/personalized-lms/personalized-lms/discussions)
+- 🔒 **Security**: [Report security issues](SECURITY.md)
+- ❓ **FAQ**: [Frequently Asked Questions](FAQ.md)
+
+### Professional Services
+While the software is free, we offer professional services:
+- 🏗️ **Custom Development**: Tailored features and integrations
+- 🚀 **Deployment Support**: Professional setup and configuration
+- 📞 **Technical Support**: Priority support and consulting
+- 🎓 **Training**: Team training and workshops
+
+Contact us at [enterprise@personalized-lms.org](mailto:enterprise@personalized-lms.org) for more information.
+
+### Community Resources
+- [Roadmap](ROADMAP.md) - Project roadmap and future plans
+- [Migration Guide](MIGRATION.md) - Version migration assistance
+- [Governance](GOVERNANCE.md) - Project governance and decision making
 
 ## 🗺️ Roadmap
 
@@ -347,6 +421,34 @@ This project follows a spec-driven development approach. See the `.kiro/specs/pe
 - [ ] Student progress tracking and analytics
 - [ ] AI-powered personalized learning roadmaps
 
+## 🙏 Acknowledgments
+
+### Core Technologies
+- Built with [Svelte](https://svelte.dev/) and [SvelteKit](https://kit.svelte.dev/)
+- Powered by [Supabase](https://supabase.com/)
+- AI capabilities provided by [OpenAI](https://openai.com/)
+- UI components styled with [Tailwind CSS](https://tailwindcss.com/)
+
+### Contributors
+Special thanks to all our [contributors](https://github.com/personalized-lms/personalized-lms/graphs/contributors) who make this project possible!
+
+### Sponsors
+We're grateful to our sponsors who support the project's development:
+- [Become a sponsor](https://github.com/sponsors/personalized-lms) to support ongoing development
+
+## 📞 Contact
+
+- **General Questions**: [hello@personalized-lms.org](mailto:hello@personalized-lms.org)
+- **Technical Support**: [support@personalized-lms.org](mailto:support@personalized-lms.org)
+- **Security Issues**: [security@personalized-lms.org](mailto:security@personalized-lms.org)
+- **Partnership Inquiries**: [partnerships@personalized-lms.org](mailto:partnerships@personalized-lms.org)
+
 ---
 
-**Built with ❤️ by the open-source community**
+<div align="center">
+
+**Made with ❤️ by the open source community**
+
+[⭐ Star us on GitHub](https://github.com/personalized-lms/personalized-lms) • [💬 Join Discord](https://discord.gg/personalized-lms) • [📖 Read the Docs](https://docs.personalized-lms.org) • [🚀 Try the Demo](https://demo.personalized-lms.org)
+
+</div>

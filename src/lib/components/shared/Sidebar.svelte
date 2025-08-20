@@ -27,25 +27,25 @@
 		const studentItems = [
 			{
 				label: 'My Courses',
-				href: '/dashboard/student/courses',
+				href: '/courses',
 				icon: 'courses',
 				roles: ['student']
 			},
 			{
 				label: 'Learning Path',
-				href: '/dashboard/student/roadmap',
+				href: '/student/roadmap',
 				icon: 'roadmap',
 				roles: ['student']
 			},
 			{
 				label: 'Assessments',
-				href: '/dashboard/student/assessments',
+				href: '/assessments',
 				icon: 'assessments',
 				roles: ['student']
 			},
 			{
 				label: 'Progress',
-				href: '/dashboard/student/progress',
+				href: '/progress',
 				icon: 'progress',
 				roles: ['student']
 			}
@@ -54,25 +54,25 @@
 		const instructorItems = [
 			{
 				label: 'My Courses',
-				href: '/dashboard/instructor/courses',
+				href: '/courses',
 				icon: 'courses',
 				roles: ['instructor', 'admin']
 			},
 			{
 				label: 'Create Course',
-				href: '/dashboard/instructor/courses/create',
+				href: '/courses/create',
 				icon: 'create',
 				roles: ['instructor', 'admin']
 			},
 			{
 				label: 'Students',
-				href: '/dashboard/instructor/students',
+				href: '/students',
 				icon: 'students',
 				roles: ['instructor', 'admin']
 			},
 			{
 				label: 'Analytics',
-				href: '/dashboard/instructor/analytics',
+				href: '/analytics',
 				icon: 'analytics',
 				roles: ['instructor', 'admin']
 			}
@@ -81,13 +81,13 @@
 		const adminItems = [
 			{
 				label: 'User Management',
-				href: '/dashboard/admin/users',
+				href: '/admin/users',
 				icon: 'users',
 				roles: ['admin']
 			},
 			{
 				label: 'System Settings',
-				href: '/dashboard/admin/settings',
+				href: '/admin/settings',
 				icon: 'settings',
 				roles: ['admin']
 			}
