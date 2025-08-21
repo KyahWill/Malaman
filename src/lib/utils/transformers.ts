@@ -37,9 +37,9 @@ export const transformUserProfile = (dbProfile: any): UserProfile => {
     last_name: dbProfile.last_name,
     avatar_url: dbProfile.avatar_url,
     learning_preferences: dbProfile.learning_preferences ? 
-      JSON.parse(dbProfile.learning_preferences) : null,
+      dbProfile.learning_preferences : null,
     knowledge_profile: dbProfile.knowledge_profile ? 
-      JSON.parse(dbProfile.knowledge_profile) : null,
+      dbProfile.knowledge_profile : null,
     created_at: dbProfile.created_at,
     updated_at: dbProfile.updated_at
   };
@@ -163,7 +163,7 @@ export const transformAssessment = (dbAssessment: any): Assessment => {
     title: dbAssessment.title,
     description: dbAssessment.description,
     questions: typeof dbAssessment.questions === 'string' ? 
-      JSON.parse(dbAssessment.questions) : dbAssessment.questions,
+      (dbAssessment.questions) : dbAssessment.questions,
     ai_generated: dbAssessment.ai_generated,
     source_content_ids: dbAssessment.source_content_ids || [],
     is_mandatory: dbAssessment.is_mandatory,

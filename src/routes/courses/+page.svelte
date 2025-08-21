@@ -10,7 +10,6 @@
 
 	let { data }: { data: PageData } = $props();
 	let { courses, searchQuery, currentPage, userRole } = $derived(data);
-
 	let searchInput = $state('');
 	let isSearching = $state(false);
 

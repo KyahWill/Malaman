@@ -187,8 +187,7 @@ export class CourseService {
         .select(`
           *,
           instructor:profiles!courses_instructor_id_fkey(*),
-          lessons(*),
-          final_assessment:assessments!courses_final_assessment_id_fkey(*)
+          lessons(*)
         `)
         .eq('id', id)
         .single();
@@ -226,7 +225,6 @@ export class CourseService {
         data,
         data.instructor,
         data.lessons,
-        data.final_assessment,
         enrollmentStatus
       );
     } catch (error) {
@@ -385,8 +383,7 @@ export class LessonService {
         .select(`
           *,
           content_blocks(*),
-          course:courses(*),
-          assessment:assessments!lessons_assessment_id_fkey(*)
+          course:courses(*)
         `)
         .eq('id', id)
         .single();
