@@ -9,3 +9,4 @@ export { default as YouTubeEmbed } from './YouTubeEmbed.svelte';
 export { default as AssessmentBuilder } from './AssessmentBuilder.svelte';
 export { default as AIAssessmentBuilder } from './AIAssessmentBuilder.svelte';
 export { default as AssessmentPreview } from './AssessmentPreview.svelte';
+export { default as AssessmentGrading } from './AssessmentGrading.svelte';

@@ -658,7 +658,6 @@ export class AssessmentService {
         .eq('course_id', courseId);
 
       if (error) throw error;
-      console.log(data)
       return data.map(transformAssessment);
     } catch (error) {
       throw handleDatabaseError(error, 'Failed to fetch course assessments');
@@ -881,6 +880,35 @@ export class AssessmentAttemptService {
       return data.length > 0 ? data[0].attempt_number + 1 : 1;
     } catch (error) {
       throw handleDatabaseError(error, 'Failed to get next attempt number');
+    }
+  }
+
+  /**
+   * Update assessment attempt (for manual grading)
+   */
+  static async update(id: string, updates: Partial<AssessmentAttempt>): Promise<AssessmentAttempt> {
+    try {
+      const dbUpdates: any = {};
+      
+      if (updates.answers) dbUpdates.answers = JSON.stringify(updates.answers);
+      if (updates.score !== undefined) dbUpdates.score = updates.score;
+      if (updates.points_earned !== undefined) dbUpdates.points_earned = updates.points_earned;
+      if (updates.passed !== undefined) dbUpdates.passed = updates.passed;
+      if (updates.feedback) dbUpdates.feedback = JSON.stringify(updates.feedback);
+      
+      dbUpdates.updated_at = new Date().toISOString();
+
+      const { data, error } = await supabase
+        .from('assessment_attempts')
+        .update(dbUpdates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return transformAssessmentAttempt(data);
+    } catch (error) {
+      throw handleDatabaseError(error, 'Failed to update assessment attempt');
     }
   }
 }

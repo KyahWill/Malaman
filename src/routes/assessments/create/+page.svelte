@@ -198,6 +198,7 @@
       onCancel={handleCancel}
       onPreview={handlePreview}
     />
+  <!-- 
   {:else if currentView === 'preview'}
     <AssessmentPreview
       assessment={assessment}
@@ -205,6 +206,7 @@
       on:edit={handleBackToBuilder}
       on:publish={handlePublish}
     />
+  -->
   {/if}
 
   <!-- Loading Overlay -->
