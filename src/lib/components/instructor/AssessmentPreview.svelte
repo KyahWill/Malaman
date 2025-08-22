@@ -5,7 +5,7 @@
   import { RichTextRenderer } from '$lib/components/ui/index.js';
 
   // Props
-  export let assessment: Assessment;
+  let {assessment}: { assessment: Assessment } = $props();
 
   const dispatch = createEventDispatcher<{
     close: void;
@@ -14,12 +14,12 @@
   }>();
 
   // State
-  let selectedAnswers: Record<string, string | string[]> = {};
-  let showResults = false;
+  let selectedAnswers: Record<string, string | string[]> =$state({}) ;
+  let showResults = $state(false);
 
   // Calculate total points and estimated time
-  $: totalPoints = assessment.questions.reduce((sum, q) => sum + q.points, 0);
-  $: estimatedTime = Math.max(assessment.questions.length * 2, 10); // 2 minutes per question, minimum 10 minutes
+  let totalPoints = $derived(assessment.questions?.reduce((sum, q) => sum + q.points, 0));
+  let estimatedTime = $derived(Math.max(assessment.questions?.length * 2, 10)); // 2 minutes per question, minimum 10 minutes
 
   function handleAnswerChange(questionId: string, answer: string | string[]) {
     selectedAnswers[questionId] = answer;
@@ -39,7 +39,7 @@
     let totalPoints = 0;
     let earnedPoints = 0;
 
-    assessment.questions.forEach(question => {
+    assessment.questions?.forEach(question => {
       totalPoints += question.points;
       const studentAnswer = selectedAnswers[question.id];
       
@@ -67,17 +67,17 @@
     return false;
   }
 
-  function getQuestionTypeLabel(type: string): string {
+  function getQuestionTypeLabel(type: 'multiple_choice' | 'true_false' | 'short_answer' | 'essay'): string {
     const labels = {
       multiple_choice: 'Multiple Choice',
       true_false: 'True/False',
       short_answer: 'Short Answer',
       essay: 'Essay'
     };
-    return labels[type] || type;
+    return labels[type];
   }
 
-  $: results = showResults ? calculateScore() : null;
+  let results = $derived(showResults ? calculateScore() : null);
 </script>
 
 <div class="max-w-4xl mx-auto space-y-6">
@@ -97,10 +97,10 @@
       </div>
       
       <div class="flex space-x-2">
-        <Button on:click={() => dispatch('edit')} variant="outline">
+        <Button onclick={() => dispatch('edit')} variant="outline">
           Edit Assessment
         </Button>
-        <Button on:click={() => dispatch('close')} variant="outline">
+        <Button onclick={() => dispatch('close')} variant="outline">
           Close Preview
         </Button>
       </div>
@@ -108,7 +108,7 @@
 
     {#if assessment.description}
       <div class="prose max-w-none">
-        <RichTextRenderer content={assessment.description} />
+        <RichTextRenderer html={assessment.description} />
       </div>
     {/if}
 
@@ -164,10 +164,10 @@
       </div>
       
       <div class="flex space-x-2">
-        <Button on:click={resetPreview} variant="outline">
+        <Button onclick={resetPreview} variant="outline">
           Try Again
         </Button>
-        <Button on:click={() => dispatch('publish')} variant="primary">
+        <Button onclick={() => dispatch('publish')} variant="primary">
           Publish Assessment
         </Button>
       </div>
@@ -189,7 +189,7 @@
           </div>
           
           <div class="prose max-w-none">
-            <RichTextRenderer content={question.question_text} />
+            <RichTextRenderer html={question.question_text} />
           </div>
         </div>
 
@@ -203,7 +203,7 @@
                     type="radio"
                     name="question-{question.id}"
                     value={option}
-                    on:change={() => handleAnswerChange(question.id, option)}
+                    onchange={() => handleAnswerChange(question.id, option)}
                     class="text-blue-600"
                   />
                   <span>{option}</span>
@@ -217,7 +217,7 @@
                   type="radio"
                   name="question-{question.id}"
                   value="true"
-                  on:change={() => handleAnswerChange(question.id, 'true')}
+                  onchange={() => handleAnswerChange(question.id, 'true')}
                   class="text-blue-600"
                 />
                 <span>True</span>
@@ -227,7 +227,7 @@
                   type="radio"
                   name="question-{question.id}"
                   value="false"
-                  on:change={() => handleAnswerChange(question.id, 'false')}
+                  onchange={() => handleAnswerChange(question.id, 'false')}
                   class="text-blue-600"
                 />
                 <span>False</span>
@@ -236,14 +236,14 @@
           {:else if question.type === 'short_answer'}
             <textarea
               placeholder="Enter your answer..."
-              on:input={(e) => handleAnswerChange(question.id, e.target.value)}
+              oninput={(e) => handleAnswerChange(question.id, e.target.value)}
               class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows="3"
             ></textarea>
           {:else if question.type === 'essay'}
             <textarea
               placeholder="Write your essay response..."
-              on:input={(e) => handleAnswerChange(question.id, e.target.value)}
+              oninput={(e) => handleAnswerChange(question.id, e.target.value)}
               class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows="8"
             ></textarea>
@@ -274,7 +274,7 @@
               <div class="p-3 bg-blue-50 rounded-lg">
                 <span class="text-sm font-medium text-blue-700">Explanation:</span>
                 <div class="mt-1 prose prose-sm max-w-none">
-                  <RichTextRenderer content={question.explanation} />
+                  <RichTextRenderer html={question.explanation} />
                 </div>
               </div>
             {/if}
@@ -306,7 +306,7 @@
   <!-- Submit Button -->
   {#if !showResults}
     <div class="flex justify-center">
-      <Button on:click={submitPreview} variant="primary" size="lg">
+      <Button onclick={submitPreview} variant="primary" size="lg">
         Submit Preview
       </Button>
     </div>

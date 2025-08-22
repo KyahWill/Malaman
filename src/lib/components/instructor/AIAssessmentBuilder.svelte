@@ -266,7 +266,7 @@
       </div>
     </div>
 
-    <div slot="footer" class="flex justify-end space-x-2">
+    <div  class="flex justify-end space-x-2">
       <Button onclick={closeAIGenerationModal} variant="outline" disabled={isGeneratingAI}>
         Cancel
       </Button>

@@ -303,9 +303,9 @@ export const transformContentBlockForDB = (block: Partial<ContentBlock>): any =>
     id: block.id,
     lesson_id: block.lesson_id,
     type: block.type,
-    content: JSON.stringify(block.content),
+    content: block.content,
     order_index: block.order_index,
-    metadata: JSON.stringify(block.metadata || {}),
+    metadata: block.metadata || {},
     updated_at: new Date().toISOString()
   };
 };

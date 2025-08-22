@@ -4,7 +4,7 @@
   "description": "Automatically updates project documentation whenever files are created, saved, or deleted to keep documentation in sync with codebase changes",
   "version": "1",
   "when": {
-    "type": "fileEdited",
+    "type": "userTriggered",
     "patterns": [
       "src/**/*",
       "docs/**/*",

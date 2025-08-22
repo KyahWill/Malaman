@@ -4,23 +4,35 @@
   import { page } from '$app/stores';
   import type { Assessment } from '$lib/types/database.js';
   import { Button, Card, Loading, Modal } from '$lib/components/ui/index.js';
-  import { showToast } from '$lib/stores/toast.js';
+  import { toastStore, type Toast } from '$lib/stores/toast.js';
   import { authStore } from '$lib/stores/auth.js';
 
   // State
-  let assessments: Assessment[] = [];
-  let loading = true;
-  let error: string | null = null;
-  let showDeleteModal = false;
-  let assessmentToDelete: Assessment | null = null;
+  let assessments: Assessment[] = $state([]);
+  let loading = $state(true);
+  let error: string | null =$state(null);
+  let showDeleteModal = $state(false);
+  let assessmentToDelete: Assessment | null = $state(null);
 
   // Filters
-  let filterType: 'all' | 'lesson' | 'course' = 'all';
+  let filterType: 'all' | 'lesson' | 'course' = $state('all');
   let searchQuery = '';
 
   onMount(async () => {
     await loadAssessments();
   });
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info') => {
+    const newToast: Toast = {
+      id: Date.now().toString(),
+      title: "Assessment",
+      message,
+      type
+    };
+		toastStore.update(state => ({
+			...state,
+			toasts: [...state.toasts, newToast]
+		}));
+  } 
 
   async function loadAssessments() {
     try {
@@ -32,7 +44,8 @@
         throw new Error('Failed to load assessments');
       }
 
-      assessments = await response.json();
+      assessments = JSON.parse(JSON.stringify(await response.json()));
+      console.log(assessments)
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to load assessments';
       showToast(error, 'error');
@@ -41,7 +54,8 @@
     }
   }
 
-  async function deleteAssessment(assessment: Assessment) {
+  async function deleteAssessment(assessment: Assessment | null) {
+    if (assessment == null) return;
     try {
       const response = await fetch(`/api/assessments/${assessment.id}`, {
         method: 'DELETE'
@@ -84,7 +98,7 @@
   }
 
   // Computed properties
-  $: filteredAssessments = assessments.filter(assessment => {
+  let filteredAssessments = $derived.by(() => assessments.filter(assessment => {
     // Type filter
     if (filterType === 'lesson' && !assessment.lesson_id) return false;
     if (filterType === 'course' && !assessment.course_id) return false;
@@ -99,9 +113,9 @@
     }
 
     return true;
-  });
+  }));
 
-  $: canCreateAssessment = $authStore.user?.role === 'instructor' || $authStore.user?.role === 'admin';
+  let canCreateAssessment = $derived($authStore.user?.role === 'instructor' || $authStore.user?.role === 'admin');
 
   function getAssessmentType(assessment: Assessment): string {
     if (assessment.lesson_id) return 'Lesson Assessment';
@@ -140,7 +154,7 @@
     </div>
 
     {#if canCreateAssessment}
-      <Button on:click={createAssessment} variant="primary">
+      <Button onclick={createAssessment} variant="primary">
         Create Assessment
       </Button>
     {/if}
@@ -162,7 +176,7 @@
       <!-- Type Filter -->
       <div class="flex space-x-2">
         <button
-          on:click={() => filterType = 'all'}
+          onclick={() => filterType = 'all'}
           class="px-4 py-2 rounded-lg border {filterType === 'all' 
             ? 'bg-blue-500 text-white border-blue-500' 
             : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}"
@@ -170,7 +184,7 @@
           All
         </button>
         <button
-          on:click={() => filterType = 'lesson'}
+          onclick={() => filterType = 'lesson'}
           class="px-4 py-2 rounded-lg border {filterType === 'lesson' 
             ? 'bg-blue-500 text-white border-blue-500' 
             : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}"
@@ -178,7 +192,7 @@
           Lesson
         </button>
         <button
-          on:click={() => filterType = 'course'}
+          onclick={() => filterType = 'course'}
           class="px-4 py-2 rounded-lg border {filterType === 'course' 
             ? 'bg-blue-500 text-white border-blue-500' 
             : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}"
@@ -204,7 +218,7 @@
       </div>
       <h3 class="text-lg font-medium text-gray-900 mb-2">Error Loading Assessments</h3>
       <p class="text-gray-600 mb-4">{error}</p>
-      <Button on:click={loadAssessments} variant="primary">
+      <Button onclick={loadAssessments} variant="primary">
         Try Again
       </Button>
     </Card>
@@ -225,7 +239,7 @@
           : 'Create your first assessment to get started'}
       </p>
       {#if canCreateAssessment && !searchQuery && filterType === 'all'}
-        <Button on:click={createAssessment} variant="primary">
+        <Button onclick={createAssessment} variant="primary">
           Create Assessment
         </Button>
       {/if}
@@ -323,7 +337,7 @@
           <!-- Actions -->
           <div class="flex space-x-2">
             <Button
-              on:click={() => viewAssessment(assessment)}
+              onclick={() => viewAssessment(assessment)}
               variant="outline"
               size="sm"
               class="flex-1"
@@ -333,7 +347,7 @@
             
             {#if canCreateAssessment}
               <Button
-                on:click={() => editAssessment(assessment)}
+                onclick={() => editAssessment(assessment)}
                 variant="outline"
                 size="sm"
                 class="flex-1"
@@ -342,7 +356,7 @@
               </Button>
               
               <button
-                on:click={() => duplicateAssessment(assessment)}
+                onclick={() => duplicateAssessment(assessment)}
                 class="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded"
                 title="Duplicate"
               >
@@ -352,7 +366,7 @@
               </button>
               
               <button
-                on:click={() => confirmDelete(assessment)}
+                onclick={() => confirmDelete(assessment)}
                 class="p-2 text-red-600 hover:text-red-800 hover:bg-red-100 rounded"
                 title="Delete"
               >
@@ -371,7 +385,7 @@
 <!-- Delete Confirmation Modal -->
 {#if showDeleteModal && assessmentToDelete}
   <Modal
-    isOpen={showDeleteModal}
+    open={showDeleteModal}
     onClose={() => { showDeleteModal = false; assessmentToDelete = null; }}
     title="Delete Assessment"
   >
@@ -392,21 +406,20 @@
         </div>
       </div>
     </div>
-
-    <div slot="footer" class="flex justify-end space-x-2">
+    <footer class="flex justify-end space-x-2">
       <Button
-        on:click={() => { showDeleteModal = false; assessmentToDelete = null; }}
+        onclick={() => { showDeleteModal = false; assessmentToDelete = null; }}
         variant="outline"
       >
         Cancel
       </Button>
       <Button
-        on:click={() => deleteAssessment(assessmentToDelete)}
+        onclick={() => deleteAssessment(assessmentToDelete)}
         variant="primary"
         class="bg-red-600 hover:bg-red-700"
       >
         Delete Assessment
       </Button>
-    </div>
+    </footer>
   </Modal>
 {/if}

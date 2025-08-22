@@ -26,7 +26,7 @@
 	}
 
 	let {
-		content = '',
+		content = $bindable(''),
 		placeholder = 'Start writing...',
 		editable = true,
 		class: className = '',
@@ -84,7 +84,7 @@
 	}
 
 	onMount(() => {
-		document.addEventListener('keydown', handleKeyDown);
+		// document.addEventListener('keydown', handleKeyDown);
 
 		const extensions: any[] = [
 			StarterKit.configure({
@@ -154,8 +154,7 @@
 				if (maxLength && editor.getText().length > maxLength) {
 					return;
 				}
-				
-				onUpdate?.(sanitizedHtml);
+				content=sanitizedHtml
 			},
 			editorProps: {
 				attributes: {
@@ -168,12 +167,13 @@
 		});
 	});
 
+	$effect(()=>{console.log(editor)})
 	onDestroy(() => {
 		if (editor) {
 			editor.destroy();
 		}
 		// Clean up event listener
-		document.removeEventListener('keydown', handleKeyDown);
+		// document.removeEventListener('keydown', handleKeyDown);
 	});
 
 	function sanitizeContent(html: string): string {

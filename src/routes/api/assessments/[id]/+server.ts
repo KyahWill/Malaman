@@ -1,27 +1,33 @@
-import { json } from '@sveltejs/kit';
+import { error, json, redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { AssessmentService, CourseService, LessonService } from '$lib/services/database.js';
 import { validateAssessment } from '$lib/utils/validation.js';
-import { requireAuth } from '$lib/middleware/auth.js';
+import type { Assessment } from '$lib/types';
 
 export const GET: RequestHandler = async ({ params, locals }) => {
   try {
     const { id } = params;
     
     // Basic authentication check
-    const session = await requireAuth()(locals);
+    const session = await (locals.session);
+
+    if(session == null){
+      redirect(302,'auth');
+    }
     
     const assessment = await AssessmentService.getById(id);
     if (!assessment) {
-      return json({ error: 'Assessment not found' }, { status: 404 });
+      throw error(404,'Assessment Not Found')
     }
 
+    console.log(assessment)
+
     // Check permissions
-    if (session.user.role === 'student') {
+    if (session.user.user_metadata.role === 'student') {
       // Students can only view assessments for courses they're enrolled in
       // This would require additional logic to check enrollment
       // For now, we'll allow students to view any assessment
-    } else if (session.user.role === 'instructor') {
+    } else if (session.user.user_metadata.role === 'instructor') {
       // Instructors can only view their own assessments
       let hasPermission = false;
 
@@ -41,7 +47,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
       }
     }
     // Admins can view any assessment
-
+    console.log("RETURINING ASSESSMENT")
     return json(assessment);
   } catch (error) {
     console.error('Error fetching assessment:', error);
@@ -57,9 +63,14 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
     const { id } = params;
     
     // Require instructor or admin authentication
-    const session = await requireAuth(['instructor', 'admin'])(locals);
+
+    const session = await (locals.session);
+
+    if(session == null){
+      redirect(302,'auth');
+    }
     
-    const updates = await request.json();
+    const updates: Assessment = await request.json();
 
     // Get existing assessment
     const existingAssessment = await AssessmentService.getById(id);
@@ -88,7 +99,7 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
     }
 
     // Validate updated assessment data
-    const updatedAssessment = { ...existingAssessment, ...updates };
+    const updatedAssessment: Assessment = { ...existingAssessment, ...updates };
     const validation = validateAssessment(updatedAssessment);
     if (!validation.isValid) {
       return json(
@@ -121,7 +132,11 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
     const { id } = params;
     
     // Require instructor or admin authentication
-    const session = await requireAuth(['instructor', 'admin'])(locals);
+    const session = await (locals.session);
+
+    if(session == null){
+      redirect(302,'auth');
+    }
     
     // Get existing assessment
     const existingAssessment = await AssessmentService.getById(id);
@@ -130,7 +145,7 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
     }
 
     // Check permissions for instructors
-    if (session.user.role === 'instructor') {
+    if (session.user.user_metadata.role === 'instructor') {
       let hasPermission = false;
 
       if (existingAssessment.lesson_id) {

@@ -1,13 +1,17 @@
-import { json } from '@sveltejs/kit';
+import { json, redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { AssessmentService, CourseService, LessonService } from '$lib/services/database.js';
 import { validateAssessment } from '$lib/utils/validation.js';
-import { requireAuth } from '$lib/middleware/auth.js';
+import type { Assessment } from '$lib/types';
 
 export const GET: RequestHandler = async ({ url, locals }) => {
   try {
     // Require authentication
-    const session = await requireAuth(['instructor', 'admin'])(locals);
+    const session = locals.session
+
+    if(session == null) {
+      throw redirect(302, '/login')
+    }
     
     const lessonId = url.searchParams.get('lesson');
     const courseId = url.searchParams.get('course');
@@ -44,9 +48,14 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 export const POST: RequestHandler = async ({ request, locals }) => {
   try {
     // Require authentication
-    const session = await requireAuth(['instructor', 'admin'])(locals);
+
+    const session = locals.session
+
+    if(session == null) {
+      throw redirect(302, '/login')
+    }
     
-    const assessmentData = await request.json();
+    const assessmentData: Assessment = await request.json();
 
     // Validate assessment data
     const validation = validateAssessment(assessmentData);

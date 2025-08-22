@@ -90,7 +90,7 @@
 {#if open}
 	<!-- Modal backdrop -->
 	<div 
-		class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+		class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-scroll"
 		onclick={handleBackdropClick}
 		onkeydown={handleBackdropKeydown}
 		tabindex="-1"

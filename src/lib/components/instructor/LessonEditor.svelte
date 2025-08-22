@@ -1,19 +1,12 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-	import { goto } from "$app/navigation";
-	import { page } from "$app/stores";
-	import { Button, Input, Label, Card, Modal, Toast } from "$lib/components/ui";
-	import ContentBlockEditor from "./ContentBlockEditor.svelte";
-	import type {
-		Lesson,
-		ContentBlock,
-		ContentType,
-	} from "$lib/types/database.js";
-	import {
-		LessonService,
-		ContentBlockService,
-	} from "$lib/services/database.js";
-	import { toastHelpers } from "$lib/stores/toast.js";
+	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
+	import { Button, Input, Label, Card, Modal, Toast } from '$lib/components/ui';
+	import ContentBlockEditor from './ContentBlockEditor.svelte';
+	import type { Lesson, ContentBlock, ContentType } from '$lib/types/database.js';
+	import { LessonService, ContentBlockService } from '$lib/services/database.js';
+	import { toastHelpers } from '$lib/stores/toast.js';
 
 	interface Props {
 		lesson?: Lesson;
@@ -24,11 +17,9 @@
 	let { lesson, courseId, isEditing = false }: Props = $props();
 
 	// Form state
-	let title = $state(lesson?.title || "");
-	let description = $state(lesson?.description || "");
-	let learningObjectives = $state<string[]>(
-		lesson?.learning_objectives || [""],
-	);
+	let title = $state(lesson?.title || '');
+	let description = $state(lesson?.description || '');
+	let learningObjectives = $state<string[]>(lesson?.learning_objectives || ['']);
 	let estimatedDuration = $state(lesson?.estimated_duration || 0);
 	let prerequisites = $state<string[]>(lesson?.prerequisites || []);
 	let contentBlocks = $state<ContentBlock[]>(lesson?.content_blocks || []);
@@ -41,36 +32,12 @@
 	let dragOverIndex = $state<number | null>(null);
 
 	// Content type options for adding new blocks
-	const contentTypeOptions: {
-		value: ContentType;
-		label: string;
-		description: string;
-	}[] = [
-		{
-			value: "rich_text",
-			label: "Rich Text",
-			description: "Formatted text with headings, lists, and links",
-		},
-		{
-			value: "image",
-			label: "Image",
-			description: "Upload or link to images with alt text",
-		},
-		{
-			value: "video",
-			label: "Video",
-			description: "Upload video files with preview",
-		},
-		{
-			value: "file",
-			label: "File",
-			description: "Upload documents, PDFs, and other files",
-		},
-		{
-			value: "youtube",
-			label: "YouTube Video",
-			description: "Embed YouTube videos",
-		},
+	const contentTypeOptions: { value: ContentType; label: string; description: string }[] = [
+		{ value: 'rich_text', label: 'Rich Text', description: 'Formatted text with headings, lists, and links' },
+		{ value: 'image', label: 'Image', description: 'Upload or link to images with alt text' },
+		{ value: 'video', label: 'Video', description: 'Upload video files with preview' },
+		{ value: 'file', label: 'File', description: 'Upload documents, PDFs, and other files' },
+		{ value: 'youtube', label: 'YouTube Video', description: 'Embed YouTube videos' }
 	];
 
 	// Load lesson data if editing
@@ -81,18 +48,17 @@
 				const loadedLesson = await LessonService.getById(lesson.id);
 				if (loadedLesson) {
 					title = loadedLesson.title;
-					description = loadedLesson.description || "";
-					learningObjectives =
-						loadedLesson.learning_objectives.length > 0
-							? loadedLesson.learning_objectives
-							: [""];
+					description = loadedLesson.description || '';
+					learningObjectives = loadedLesson.learning_objectives.length > 0 
+						? loadedLesson.learning_objectives 
+						: [''];
 					estimatedDuration = loadedLesson.estimated_duration || 0;
 					prerequisites = loadedLesson.prerequisites || [];
 					contentBlocks = loadedLesson.content_blocks || [];
 				}
 			} catch (error) {
-				console.error("Failed to load lesson:", error);
-				toastHelpers.error("Failed to load lesson");
+				console.error('Failed to load lesson:', error);
+				toastHelpers.error('Failed to load lesson');
 			} finally {
 				isLoading = false;
 			}
@@ -101,14 +67,14 @@
 
 	// Add learning objective
 	function addLearningObjective() {
-		learningObjectives = [...learningObjectives, ""];
+		learningObjectives = [...learningObjectives, ''];
 	}
 
 	// Remove learning objective
 	function removeLearningObjective(index: number) {
 		learningObjectives = learningObjectives.filter((_, i) => i !== index);
 		if (learningObjectives.length === 0) {
-			learningObjectives = [""];
+			learningObjectives = [''];
 		}
 	}
 
@@ -116,18 +82,18 @@
 	function addContentBlock(type: ContentType) {
 		const newBlock: Partial<ContentBlock> = {
 			id: crypto.randomUUID(),
-			lesson_id: lesson?.id || "",
+			lesson_id: lesson?.id || '',
 			type,
 			content: getDefaultContentForType(type),
 			order_index: contentBlocks.length,
 			metadata: {
-				title: `New ${type.replace("_", " ")} block`,
-				description: "",
+				title: `New ${type.replace('_', ' ')} block`,
+				description: ''
 			},
 			created_at: new Date().toISOString(),
-			updated_at: new Date().toISOString(),
+			updated_at: new Date().toISOString()
 		};
-
+		
 		contentBlocks = [...contentBlocks, newBlock as ContentBlock];
 		showAddContentModal = false;
 	}
@@ -135,23 +101,16 @@
 	// Get default content structure for content type
 	function getDefaultContentForType(type: ContentType): any {
 		switch (type) {
-			case "rich_text":
-				return {
-					rich_text: {
-						html: "<p>Start writing...</p>",
-						plain_text: "Start writing...",
-					},
-				};
-			case "image":
-				return { image: { url: "", alt_text: "", caption: "" } };
-			case "video":
-				return { video: { url: "", thumbnail_url: "", duration: 0 } };
-			case "file":
-				return { file: { url: "", filename: "", file_type: "", file_size: 0 } };
-			case "youtube":
-				return {
-					youtube: { video_id: "", title: "", thumbnail_url: "", duration: 0 },
-				};
+			case 'rich_text':
+				return { rich_text: { html: '<p>Start writing...</p>', plain_text: 'Start writing...' } };
+			case 'image':
+				return { image: { url: '', alt_text: '', caption: '' } };
+			case 'video':
+				return { video: { url: '', thumbnail_url: '', duration: 0 } };
+			case 'file':
+				return { file: { url: '', filename: '', file_type: '', file_size: 0 } };
+			case 'youtube':
+				return { youtube: { video_id: '', title: '', thumbnail_url: '', duration: 0 } };
 			default:
 				return {};
 		}
@@ -163,22 +122,22 @@
 		// Update order indices
 		contentBlocks = contentBlocks.map((block, i) => ({
 			...block,
-			order_index: i,
+			order_index: i
 		}));
 	}
 
 	// Update content block
 	function updateContentBlock(index: number, updatedBlock: ContentBlock) {
-		contentBlocks = contentBlocks.map((block, i) =>
-			i === index ? updatedBlock : block,
+		contentBlocks = contentBlocks.map((block, i) => 
+			i === index ? updatedBlock : block
 		);
 	}
 
 	// Drag and drop handlers
 	function handleDragStart(event: DragEvent, index: number) {
 		if (event.dataTransfer) {
-			event.dataTransfer.effectAllowed = "move";
-			event.dataTransfer.setData("text/html", "");
+			event.dataTransfer.effectAllowed = 'move';
+			event.dataTransfer.setData('text/html', '');
 		}
 		draggedBlockIndex = index;
 	}
@@ -186,7 +145,7 @@
 	function handleDragOver(event: DragEvent, index: number) {
 		event.preventDefault();
 		if (event.dataTransfer) {
-			event.dataTransfer.dropEffect = "move";
+			event.dataTransfer.dropEffect = 'move';
 		}
 		dragOverIndex = index;
 	}
@@ -197,26 +156,25 @@
 
 	function handleDrop(event: DragEvent, dropIndex: number) {
 		event.preventDefault();
-
+		
 		if (draggedBlockIndex !== null && draggedBlockIndex !== dropIndex) {
 			const draggedBlock = contentBlocks[draggedBlockIndex];
 			const newBlocks = [...contentBlocks];
-
+			
 			// Remove dragged block
 			newBlocks.splice(draggedBlockIndex, 1);
-
+			
 			// Insert at new position
-			const insertIndex =
-				draggedBlockIndex < dropIndex ? dropIndex - 1 : dropIndex;
+			const insertIndex = draggedBlockIndex < dropIndex ? dropIndex - 1 : dropIndex;
 			newBlocks.splice(insertIndex, 0, draggedBlock);
-
+			
 			// Update order indices
 			contentBlocks = newBlocks.map((block, i) => ({
 				...block,
-				order_index: i,
+				order_index: i
 			}));
 		}
-
+		
 		draggedBlockIndex = null;
 		dragOverIndex = null;
 	}
@@ -229,7 +187,7 @@
 	// Save lesson
 	async function saveLesson() {
 		if (!title.trim()) {
-			toastHelpers.error("Please enter a lesson title");
+			toastHelpers.error('Please enter a lesson title');
 			return;
 		}
 
@@ -240,10 +198,10 @@
 				title: title.trim(),
 				description: description.trim() || null,
 				course_id: courseId,
-				learning_objectives: learningObjectives.filter((obj) => obj.trim()),
+				learning_objectives: learningObjectives.filter(obj => obj.trim()),
 				estimated_duration: estimatedDuration > 0 ? estimatedDuration : null,
 				prerequisites,
-				is_published: false,
+				is_published: false
 			};
 
 			let savedLesson: Lesson;
@@ -259,34 +217,35 @@
 
 			// Save content blocks
 			for (let i = 0; i < contentBlocks.length; i++) {
-				const block = contentBlocks[i];
+				const block = JSON.parse(JSON.stringify(contentBlocks[i]))
 				const blockData = {
 					...block,
 					lesson_id: savedLesson.id,
-					order_index: i,
+					order_index: i
 				};
-
+				console.log(blockData)
 				if (block.id && block.id.length > 10) {
 					// Update existing block
+					console.log("UPDATE")
 					await ContentBlockService.update(block.id, blockData);
 				} else {
 					// Create new block
-					const { id, ...blockDataWithoutId } = blockData;
-					await ContentBlockService.create(blockDataWithoutId);
+					delete blockData.id;
+					console.log("CREATE")
+					await ContentBlockService.create(blockData);
 				}
 			}
 
 			toastHelpers.success(
-				isEditing
-					? "Lesson updated successfully"
-					: "Lesson created successfully",
+				isEditing ? 'Lesson updated successfully' : 'Lesson created successfully'
 			);
 
 			// Redirect to course page
 			goto(`/courses/${courseId}`);
+
 		} catch (error) {
-			console.error("Failed to save lesson:", error);
-			toastHelpers.error("Failed to save lesson");
+			console.error('Failed to save lesson:', error);
+			toastHelpers.error('Failed to save lesson');
 		} finally {
 			isSaving = false;
 		}
@@ -301,35 +260,23 @@
 <div class="max-w-4xl mx-auto p-6">
 	<div class="mb-6">
 		<h1 class="text-2xl font-bold text-gray-900 mb-2">
-			{isEditing ? "Edit Lesson" : "Create New Lesson"}
+			{isEditing ? 'Edit Lesson' : 'Create New Lesson'}
 		</h1>
 		<p class="text-gray-600">
-			{isEditing
-				? "Update your lesson content and structure"
-				: "Create engaging lesson content with multiple media types"}
+			{isEditing ? 'Update your lesson content and structure' : 'Create engaging lesson content with multiple media types'}
 		</p>
 	</div>
 
 	{#if isLoading}
 		<div class="flex justify-center items-center py-12">
-			<div
-				class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
-			></div>
+			<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
 		</div>
 	{:else}
-		<form
-			onsubmit={(e) => {
-				e.preventDefault();
-				saveLesson();
-			}}
-			class="space-y-6"
-		>
+		<form onsubmit={(e) => { e.preventDefault(); saveLesson(); }} class="space-y-6">
 			<!-- Basic Information -->
 			<Card variant="default" padding="lg">
-				<h2 class="text-lg font-semibold text-gray-900 mb-4">
-					Basic Information
-				</h2>
-
+				<h2 class="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
+				
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div class="md:col-span-2">
 						<Label for="title">Lesson Title *</Label>
@@ -355,13 +302,13 @@
 
 					<div>
 						<Label for="duration">Estimated Duration (minutes)</Label>
-						<input
+						<Input
 							id="duration"
 							type="number"
 							bind:value={estimatedDuration}
 							placeholder="0"
 							min="0"
-							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+							class="mt-1"
 						/>
 					</div>
 				</div>
@@ -370,9 +317,7 @@
 			<!-- Learning Objectives -->
 			<Card variant="default" padding="lg">
 				<div class="flex items-center justify-between mb-4">
-					<h2 class="text-lg font-semibold text-gray-900">
-						Learning Objectives
-					</h2>
+					<h2 class="text-lg font-semibold text-gray-900">Learning Objectives</h2>
 					<Button
 						type="button"
 						variant="secondary"
@@ -417,40 +362,24 @@
 						type="button"
 						variant="primary"
 						size="sm"
-						onclick={() => (showAddContentModal = true)}
+						onclick={() => showAddContentModal = true}
 					>
 						Add Content Block
 					</Button>
 				</div>
 
 				{#if contentBlocks.length === 0}
-					<div
-						class="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg"
-					>
-						<svg
-							class="mx-auto h-12 w-12 text-gray-400"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-							/>
+					<div class="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
+						<svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
 						</svg>
-						<h3 class="mt-2 text-sm font-medium text-gray-900">
-							No content blocks yet
-						</h3>
-						<p class="mt-1 text-sm text-gray-500">
-							Start by adding your first content block.
-						</p>
+						<h3 class="mt-2 text-sm font-medium text-gray-900">No content blocks yet</h3>
+						<p class="mt-1 text-sm text-gray-500">Start by adding your first content block.</p>
 						<div class="mt-6">
 							<Button
 								type="button"
 								variant="primary"
-								onclick={() => (showAddContentModal = true)}
+								onclick={() => showAddContentModal = true}
 							>
 								Add Content Block
 							</Button>
@@ -460,14 +389,8 @@
 					<div class="space-y-4">
 						{#each contentBlocks as block, index}
 							<div
-								class="border border-gray-200 rounded-lg p-4 {dragOverIndex ===
-								index
-									? 'border-blue-500 bg-blue-50'
-									: ''}"
+								class="border border-gray-200 rounded-lg p-4 {dragOverIndex === index ? 'border-blue-500 bg-blue-50' : ''}"
 								draggable="true"
-								role="button"
-								tabindex="0"
-								aria-label="Drag to reorder content block"
 								ondragstart={(e) => handleDragStart(e, index)}
 								ondragover={(e) => handleDragOver(e, index)}
 								ondragleave={handleDragLeave}
@@ -476,19 +399,11 @@
 							>
 								<div class="flex items-center justify-between mb-3">
 									<div class="flex items-center gap-2">
-										<svg
-											class="w-5 h-5 text-gray-400 cursor-move"
-											fill="currentColor"
-											viewBox="0 0 20 20"
-										>
-											<path
-												d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zM6 6h8v2H6V6zm0 4h8v2H6v-2z"
-											/>
+										<svg class="w-5 h-5 text-gray-400 cursor-move" fill="currentColor" viewBox="0 0 20 20">
+											<path d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zM6 6h8v2H6V6zm0 4h8v2H6v-2z"/>
 										</svg>
 										<span class="text-sm font-medium text-gray-700">
-											{block.type
-												.replace("_", " ")
-												.replace(/\b\w/g, (l) => l.toUpperCase())} Block
+											{block.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} Block
 										</span>
 									</div>
 									<Button
@@ -504,8 +419,7 @@
 
 								<ContentBlockEditor
 									{block}
-									onUpdate={(updatedBlock) =>
-										updateContentBlock(index, updatedBlock)}
+									onUpdate={(updatedBlock) => updateContentBlock(index, updatedBlock)}
 								/>
 							</div>
 						{/each}
@@ -529,29 +443,13 @@
 					disabled={isSaving || !title.trim()}
 				>
 					{#if isSaving}
-						<svg
-							class="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
-						>
-							<circle
-								class="opacity-25"
-								cx="12"
-								cy="12"
-								r="10"
-								stroke="currentColor"
-								stroke-width="4"
-							></circle>
-							<path
-								class="opacity-75"
-								fill="currentColor"
-								d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-							></path>
+						<svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+							<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
 						</svg>
 						Saving...
 					{:else}
-						{isEditing ? "Update Lesson" : "Create Lesson"}
+						{isEditing ? 'Update Lesson' : 'Create Lesson'}
 					{/if}
 				</Button>
 			</div>
@@ -564,13 +462,11 @@
 	<Modal
 		title="Add Content Block"
 		open={showAddContentModal}
-		onClose={() => (showAddContentModal = false)}
+		onClose={() => showAddContentModal = false}
 	>
 		<div class="space-y-4">
-			<p class="text-sm text-gray-600">
-				Choose the type of content you want to add to your lesson:
-			</p>
-
+			<p class="text-sm text-gray-600">Choose the type of content you want to add to your lesson:</p>
+			
 			<div class="grid grid-cols-1 gap-3">
 				{#each contentTypeOptions as option}
 					<button

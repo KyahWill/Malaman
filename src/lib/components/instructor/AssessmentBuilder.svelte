@@ -90,7 +90,7 @@
   function addQuestion() {
     editingQuestion = {
       id: crypto.randomUUID(),
-      type: 'multiple_choice',
+      type: 'true_false',
       question_text: '',
       options: ['', '', '', ''],
       correct_answer: '',
@@ -109,9 +109,9 @@
     showQuestionModal = true;
   }
 
-  function saveQuestion() {
+  function saveQuestion(closeModal = true) {
     if (!editingQuestion) return;
-
+    console.log(editingQuestion)
     const validation = validateQuestion(editingQuestion);
     if (!validation.isValid) {
       toast.error(validation.errors.join(', '));
@@ -126,7 +126,16 @@
       assessment.questions = [...assessment.questions, editingQuestion];
     }
 
-    closeQuestionModal();
+    toast.success('Question saved!');
+
+    if (closeModal) {
+      closeQuestionModal();
+    }
+  }
+
+  function saveAndContinue() {
+    saveQuestion(false);
+    addQuestion();
   }
 
   function deleteQuestion(index: number) {
@@ -333,7 +342,7 @@
 
 <div class="space-y-6">
   <!-- Assessment Header -->
-  <Card class="p-6">
+  <Card class="p-6 ">
     <h2 class="text-2xl font-bold mb-4">
       {isEditing ? 'Edit Assessment' : 'Create Assessment'}
     </h2>
@@ -380,8 +389,7 @@
     <div class="mb-6">
       <Label for="description">Description</Label>
       <RichTextEditor
-        content={assessment.description || ''}
-        onContentChange={(content) => assessment.description = content}
+        bind:content={assessment.description}
         placeholder="Describe what this assessment covers..."
         class="min-h-[100px]"
       />
@@ -762,7 +770,7 @@
         <select
           id="question-type"
           bind:value={editingQuestion.type}
-          on:change={handleQuestionTypeChange}
+          onchange={handleQuestionTypeChange}
           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           {#each questionTypes as type}
@@ -802,7 +810,7 @@
                 />
                 {#if editingQuestion.options.length > 2}
                   <Button
-                    on:click={() => removeOption(index)}
+                    onclick={() => removeOption(index)}
                     variant="outline"
                     size="sm"
                     class="text-red-600"
@@ -813,7 +821,7 @@
               </div>
             {/each}
           {/if}
-          <Button on:click={addOption} variant="outline" size="sm">
+          <Button onclick={addOption} variant="outline" size="sm">
             Add Option
           </Button>
         </div>
@@ -847,21 +855,24 @@
       {/if}
 
       <!-- Short Answer/Essay Correct Answer -->
-      {#if editingQuestion.type === 'short_answer' || editingQuestion.type === 'essay'}
-        <div>
-          <Label for="correct-answer">
-            {editingQuestion.type === 'essay' ? 'Sample Answer' : 'Correct Answer'} *
-          </Label>
-          <RichTextEditor
-            bind:content={editingQuestion.correct_answer}
-            placeholder={editingQuestion.type === 'essay' 
-              ? 'Provide a sample answer or key points...' 
-              : 'Enter the correct answer...'
-            }
-            class="min-h-[100px]"
-          />
-        </div>
-      {/if}
+       <!--
+        TODO: Remove Essay and Short Answer as they are irrelevant.
+        {#if editingQuestion.type === 'short_answer' || editingQuestion.type === 'essay'}
+          <div>
+            <Label for="correct-answer">
+              {editingQuestion.type === 'essay' ? 'Sample Answer' : 'Correct Answer'} *
+            </Label>
+            <RichTextEditor
+              content={editingQuestion.correct_answer}
+              placeholder={editingQuestion.type === 'essay' 
+                ? 'Provide a sample answer or key points...' 
+                : 'Enter the correct answer...'
+              }
+              class="min-h-[100px]"
+            />
+          </div>
+        {/if}
+       -->
 
       <!-- Question Configuration -->
       <div class="grid grid-cols-2 gap-4">
@@ -871,7 +882,7 @@
             id="points"
             type="number"
             min="1"
-            bind:value={editingQuestion.points}
+            value={editingQuestion.points.toString()}
             required
           />
         </div>
@@ -883,7 +894,7 @@
             type="number"
             min="1"
             max="5"
-            bind:value={editingQuestion.difficulty_level}
+            value={editingQuestion.difficulty_level.toString()}
             required
           />
         </div>
@@ -904,9 +915,9 @@
         <Label for="topics">Topics (comma-separated)</Label>
         <Input
           id="topics"
-          bind:value={editingQuestion.topics}
+          value={editingQuestion.topics}
           placeholder="e.g., algebra, equations, problem-solving"
-          on:input={(e) => {
+          oninput={(e) => {
             if (editingQuestion) {
               editingQuestion.topics = e.target.value.split(',').map(t => t.trim()).filter(t => t);
             }
@@ -915,12 +926,17 @@
       </div>
     </div>
 
-    <div slot="footer" class="flex justify-end space-x-2">
-      <Button on:click={closeQuestionModal} variant="outline">
+    <div class="flex justify-end space-x-2">
+      <Button onclick={closeQuestionModal} variant="outline">
         Cancel
       </Button>
-      <Button on:click={saveQuestion} variant="primary">
-        {editingQuestionIndex >= 0 ? 'Update Question' : 'Add Question'}
+      {#if editingQuestionIndex < 0}
+        <Button onclick={saveAndContinue} variant="outline">
+          Save & Add Another
+        </Button>
+      {/if}
+      <Button onclick={() => saveQuestion(true)} variant="primary">
+        {editingQuestionIndex >= 0 ? 'Update Question' : 'Save & Close'}
       </Button>
     </div>
   </Modal>

@@ -4,12 +4,12 @@
   import { page } from '$app/stores';
   import type { Assessment } from '$lib/types/database.js';
   import { AssessmentBuilder, AssessmentPreview } from '$lib/components/instructor/index.js';
-  import { showToast } from '$lib/stores/toast.js';
+  import { toastStore, type Toast } from '$lib/stores/toast.js';
   import { authStore } from '$lib/stores/auth.js';
 
   // State
-  let currentView: 'builder' | 'preview' = 'builder';
-  let assessment: Partial<Assessment> = {
+  let currentView: 'builder' | 'preview' = $state('builder');
+  let assessment: Partial<Assessment> = $state({
     title: '',
     description: '',
     questions: [],
@@ -19,18 +19,38 @@
     time_limit: null,
     ai_generated: false,
     source_content_ids: []
-  };
-  let saving = false;
-  let duplicateId: string | null = null;
+  });
+  let saving = $state(false);
 
   // URL parameters
-  $: lessonId = $page.url.searchParams.get('lesson');
-  $: courseId = $page.url.searchParams.get('course');
-  $: duplicateId = $page.url.searchParams.get('duplicate');
+  let lessonId = $derived( $page.url.searchParams.get('lesson'));
+  let courseId = $derived($page.url.searchParams.get('courseId'));
+  let duplicateId = $derived($page.url.searchParams.get('duplicate'));
+
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info') => {
+    const newToast: Toast = {
+      id: Date.now().toString(),
+      title: "Assessment",
+      message,
+      type
+    };
+		toastStore.update(state => ({
+			...state,
+			toasts: [...state.toasts, newToast]
+		}));
+  } 
 
   onMount(async () => {
     // Check authentication
-    if (!$authStore.user || !['instructor', 'admin'].includes($authStore.user.role)) {
+    if (!$authStore.user ) {
+      goto('/dashboard');
+      return;
+    }
+    if (!$authStore.user.role ) {
+      goto('/dashboard');
+      return;
+    }
+    if (!['instructor', 'admin'].includes($authStore.user.user_metadata.role)) {
       goto('/dashboard');
       return;
     }
@@ -68,10 +88,14 @@
     }
   }
 
-  async function handleSave(event: CustomEvent<Assessment>) {
+  async function handleSave(assessment: Partial<Assessment>) {
     try {
       saving = true;
-      const assessmentData = event.detail;
+      const assessmentData = { ...assessment };
+
+      if (courseId) {
+        assessmentData.course_id = courseId;
+      }
 
       const response = await fetch('/api/assessments', {
         method: 'POST',
@@ -100,8 +124,9 @@
   }
 
   function handleCancel() {
-    // Check if there are unsaved changes
-    if (assessment.title || assessment.questions?.length > 0) {
+    // Check if the assessment exists and if the assessmente questions are more than zero
+    // todo: add assessments.questions.length > 0 as a parameter
+    if (assessment.title) {
       if (confirm('You have unsaved changes. Are you sure you want to leave?')) {
         goto('/assessments');
       }
@@ -110,8 +135,8 @@
     }
   }
 
-  function handlePreview(event: CustomEvent<Assessment>) {
-    assessment = event.detail;
+  function handlePreview(assessment:Assessment) {
+    assessment = assessment;
     currentView = 'preview';
   }
 
@@ -123,17 +148,17 @@
     // In a real implementation, this would publish the assessment
     // For now, we'll just save it
     const saveEvent = new CustomEvent('save', { detail: assessment });
-    await handleSave(saveEvent);
+    await handleSave(assessment);
   }
 
   // Page title based on context
-  $: pageTitle = duplicateId 
+  let pageTitle = $derived.by(()=>  duplicateId 
     ? 'Duplicate Assessment' 
     : lessonId 
       ? 'Create Lesson Assessment' 
       : courseId 
         ? 'Create Course Assessment' 
-        : 'Create Assessment';
+        : 'Create Assessment');
 </script>
 
 <svelte:head>
@@ -165,13 +190,13 @@
   <!-- Content -->
   {#if currentView === 'builder'}
     <AssessmentBuilder
-      bind:assessment
+      assessment={assessment}
       {lessonId}
       {courseId}
       isEditing={false}
-      on:save={handleSave}
-      on:cancel={handleCancel}
-      on:preview={handlePreview}
+      onSave={handleSave}
+      onCancel={handleCancel}
+      onPreview={handlePreview}
     />
   {:else if currentView === 'preview'}
     <AssessmentPreview

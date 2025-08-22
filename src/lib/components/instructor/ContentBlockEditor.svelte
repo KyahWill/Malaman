@@ -151,6 +151,7 @@
 			youtubeVideoId = videoId;
 			// Fetch video metadata
 			fetchYouTubeMetadata(videoId);
+			updateBlock()
 		} else {
 			toastHelpers.error('Invalid YouTube URL');
 		}
@@ -223,10 +224,6 @@
 		return names[type] || type;
 	}
 
-	// Auto-update when metadata changes
-	$effect(() => {
-		updateBlock();
-	});
 </script>
 
 <div class="content-block-editor">

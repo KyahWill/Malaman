@@ -10,7 +10,7 @@
 	let { course } = $derived(data);
 
 	// Form state
-	let formData = $state({
+	let formData = $derived({
 		title: course.title,
 		description: course.description || '',
 		difficulty_level: course.difficulty_level,
@@ -112,6 +112,12 @@
 					</p>
 				</div>
 				<div class="flex items-center space-x-4">
+					<Button
+						variant="primary"
+						onclick={() => goto(`/assessments/create?courseId=${course.id}`)}
+					>
+						Create Assessment
+					</Button>
 					<Button
 						variant="secondary"
 						onclick={() => goto(`/courses/${course.id}`)}

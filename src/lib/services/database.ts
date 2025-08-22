@@ -560,8 +560,7 @@ export class ContentBlockService {
         .from('content_blocks')
         .update(dbUpdates)
         .eq('id', id)
-        .select()
-        .single();
+        .select();
 
       if (error) throw error;
       return transformContentBlock(data);
@@ -659,6 +658,7 @@ export class AssessmentService {
         .eq('course_id', courseId);
 
       if (error) throw error;
+      console.log(data)
       return data.map(transformAssessment);
     } catch (error) {
       throw handleDatabaseError(error, 'Failed to fetch course assessments');
@@ -728,14 +728,14 @@ export class AssessmentService {
       const { data, error } = await supabase
         .from('assessments')
         .select(`
-          *,
+          *
           lessons!assessments_lesson_id_fkey(
             course_id,
             courses!lessons_course_id_fkey(instructor_id)
           ),
           courses!assessments_course_id_fkey(instructor_id)
         `)
-        .or(`lessons.courses.instructor_id.eq.${instructorId},courses.instructor_id.eq.${instructorId}`);
+        //.or(`courses.instructor_id.eq.${instructorId}`);
 
       if (error) throw error;
       return data.map(transformAssessment);

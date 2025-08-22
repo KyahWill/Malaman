@@ -5,16 +5,16 @@
   import type { Assessment } from '$lib/types/database.js';
   import { Button, Card, Loading } from '$lib/components/ui/index.js';
   import { AssessmentPreview } from '$lib/components/instructor/index.js';
-  import { showToast } from '$lib/stores/toast.js';
+  import { toastHelpers as toast } from '$lib/stores/toast.js';
   import { authStore } from '$lib/stores/auth.js';
 
   // State
-  let assessment: Assessment | null = null;
-  let loading = true;
-  let error: string | null = null;
+  let assessment: Assessment | null = $state(null);
+  let loading = $state(true);
+  let error: string | null = $state(null);
 
   // Get assessment ID from URL
-  $: assessmentId = $page.params.id;
+  let assessmentId = $derived($page.params.id);
 
   onMount(async () => {
     await loadAssessment();
@@ -36,9 +36,10 @@
       }
 
       assessment = await response.json();
+      console.log(assessment)
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to load assessment';
-      showToast(error, 'error');
+      toast.error(error)
     } finally {
       loading = false;
     }
@@ -59,10 +60,10 @@
 
     try {
       // In a real implementation, this would update the assessment status
-      showToast('Assessment published successfully', 'success');
+      toast.success("Successfully published assessment")
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to publish assessment';
-      showToast(message, 'error');
+      toast.error(message)
     }
   }
 
@@ -78,9 +79,9 @@
     }
   }
 
-  $: canEdit = $authStore.user?.role === 'instructor' || $authStore.user?.role === 'admin';
-  $: canTake = $authStore.user?.role === 'student';
-  $: canViewResults = canEdit;
+  let canEdit = $derived($authStore.user?.role === 'instructor' || $authStore.user?.role === 'admin');
+  let canTake = $derived($authStore.user?.role === 'student');
+  let canViewResults = $derived(canEdit);
 </script>
 
 <svelte:head>
@@ -104,10 +105,10 @@
       <h3 class="text-lg font-medium text-gray-900 mb-2">Error Loading Assessment</h3>
       <p class="text-gray-600 mb-4">{error}</p>
       <div class="space-x-2">
-        <Button on:click={loadAssessment} variant="primary">
+        <Button onclick={loadAssessment} variant="primary">
           Try Again
         </Button>
-        <Button on:click={handleClose} variant="outline">
+        <Button onclick={handleClose} variant="outline">
           Back to Assessments
         </Button>
       </div>
@@ -144,24 +145,24 @@
 
         <div class="flex space-x-2">
           {#if canTake}
-            <Button on:click={handleTakeAssessment} variant="primary">
+            <Button onclick={handleTakeAssessment} variant="primary">
               Take Assessment
             </Button>
           {/if}
           
           {#if canViewResults}
-            <Button on:click={handleViewResults} variant="outline">
+            <Button onclick={handleViewResults} variant="outline">
               View Results
             </Button>
           {/if}
           
           {#if canEdit}
-            <Button on:click={handleEdit} variant="outline">
+            <Button onclick={handleEdit} variant="outline">
               Edit Assessment
             </Button>
           {/if}
           
-          <Button on:click={handleClose} variant="outline">
+          <Button onclick={handleClose} variant="outline">
             Back to List
           </Button>
         </div>
