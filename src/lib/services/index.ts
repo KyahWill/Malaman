@@ -30,3 +30,7 @@ export type * from './ai/types.js';
 export { ProgressionControlService } from './progressionControl.js';
 export { ProgressionClient, ProgressionUtils } from './progressionClient.js';
 export type * from './progressionControl.js';
+
+// Roadmap services
+export { RoadmapService, getRoadmapService } from './roadmapService.js';
+export type * from './roadmapService.js';

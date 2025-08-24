@@ -231,7 +231,6 @@
 				} else {
 					// Create new block
 					delete blockData.id;
-					console.log("CREATE")
 					await ContentBlockService.create(blockData);
 				}
 			}

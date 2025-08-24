@@ -2,7 +2,7 @@
 	import { cn } from "$lib/utils";
 
 	interface Props {
-		type?: "text" | "email" | "password" | "number" | "tel" | "url";
+		type?: "text" | "email" | "password" | "number" | "tel" | "url" | "date";
 		placeholder?: string;
 		value?: string;
 		disabled?: boolean;

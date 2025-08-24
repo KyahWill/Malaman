@@ -2,6 +2,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import LogoutButton from '$lib/components/auth/LogoutButton.svelte';
 	import KnowledgeProfile from '$lib/components/student/KnowledgeProfile.svelte';
+	import PersonalizedRoadmap from '$lib/components/student/PersonalizedRoadmap.svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import type { PageData } from './$types';
@@ -81,6 +82,16 @@
 					on:click={() => setActiveTab('courses')}
 				>
 					My Courses
+				</button>
+				<button
+					class="py-2 px-1 border-b-2 font-medium text-sm"
+					class:border-blue-500={activeTab === 'roadmap'}
+					class:text-blue-600={activeTab === 'roadmap'}
+					class:border-transparent={activeTab !== 'roadmap'}
+					class:text-gray-500={activeTab !== 'roadmap'}
+					on:click={() => setActiveTab('roadmap')}
+				>
+					Learning Roadmap
 				</button>
 			</nav>
 		</div>
@@ -253,6 +264,8 @@
 						</Button>
 					</div>
 				</div>
+			{:else if activeTab === 'roadmap'}
+				<PersonalizedRoadmap studentId={profile?.id || ''} />
 			{/if}
 		</div>
 	</main>

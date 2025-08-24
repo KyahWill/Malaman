@@ -5,7 +5,6 @@
 	import Navigation from './Navigation.svelte';
 	import Sidebar from '$lib/components/shared/Sidebar.svelte';
 	import Toast from '$lib/components/ui/Toast.svelte';
-	import { toastStore } from '$lib/stores/toast';
 
 	let { children }: { children: any } = $props();
 

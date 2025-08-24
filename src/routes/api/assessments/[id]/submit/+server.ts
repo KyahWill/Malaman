@@ -258,6 +258,21 @@ async function updateStudentProgress(
         best_score: attempt.score
       });
     }
+
+    // Update personalized roadmap based on assessment performance
+    try {
+      const { getRoadmapService } = await import('$lib/services/roadmapService.js');
+      const roadmapService = getRoadmapService();
+      await roadmapService.updateRoadmapForAssessment(
+        studentId, 
+        assessment.id, 
+        attempt.passed, 
+        attempt.score
+      );
+    } catch (roadmapError) {
+      // Log error but don't fail the progress update
+      console.error('Failed to update roadmap after assessment:', roadmapError);
+    }
   } catch (error) {
     console.error('Error updating student progress:', error);
     // Don't throw here - the assessment submission was successful

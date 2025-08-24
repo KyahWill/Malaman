@@ -78,6 +78,12 @@ const authGuard: Handle = async ({ event, resolve }) => {
 		event.locals.profile = null;
 	}
 
+	// Redirect authenticated users from index route
+	if (user && event.url.pathname === '/') {
+		const redirectPath = event.locals.profile?.role === 'instructor' ? '/dashboard/instructor' : '/dashboard/student';
+		redirect(303, redirectPath);
+	}
+
 	// Protected routes that require authentication
 	const protectedPaths = ['/dashboard', '/profile', '/courses', '/lessons', '/assessments'];
 	const isProtectedPath = protectedPaths.some(path => event.url.pathname.startsWith(path));
@@ -94,11 +100,6 @@ const authGuard: Handle = async ({ event, resolve }) => {
 			const redirectPath = event.locals.profile?.role === 'instructor' ? '/dashboard/instructor' : '/dashboard/student';
 			redirect(303, redirectPath);
 		}
-	}
-	// Redirect authenticated users from index route
-	if (session && event.url.pathname === '/') {
-		const redirectPath = event.locals.profile?.role === 'instructor' ? '/dashboard/instructor' : '/dashboard/student';
-		redirect(303, redirectPath);
 	}
 
 	// Redirect from generic dashboard to role-specific dashboard
