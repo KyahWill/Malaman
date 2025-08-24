@@ -4,6 +4,12 @@
 	import KnowledgeProfile from '$lib/components/student/KnowledgeProfile.svelte';
 	import PersonalizedRoadmap from '$lib/components/student/PersonalizedRoadmap.svelte';
 	import AdaptiveLearningInsights from '$lib/components/student/AdaptiveLearningInsights.svelte';
+	import DashboardMetrics from '$lib/components/student/DashboardMetrics.svelte';
+	import ProgressVisualization from '$lib/components/student/ProgressVisualization.svelte';
+	import NotificationCenter from '$lib/components/student/NotificationCenter.svelte';
+	import LearningGoals from '$lib/components/student/LearningGoals.svelte';
+	import RecentActivity from '$lib/components/student/RecentActivity.svelte';
+	import InteractiveRoadmap from '$lib/components/student/InteractiveRoadmap.svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import type { PageData } from './$types';
@@ -53,9 +59,9 @@
 	<!-- Navigation Tabs -->
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 		<div class="border-b border-gray-200">
-			<nav class="-mb-px flex space-x-8">
+			<nav class="-mb-px flex space-x-8 overflow-x-auto">
 				<button
-					class="py-2 px-1 border-b-2 font-medium text-sm"
+					class="py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap"
 					class:border-blue-500={activeTab === 'overview'}
 					class:text-blue-600={activeTab === 'overview'}
 					class:border-transparent={activeTab !== 'overview'}
@@ -65,27 +71,17 @@
 					Overview
 				</button>
 				<button
-					class="py-2 px-1 border-b-2 font-medium text-sm"
-					class:border-blue-500={activeTab === 'knowledge-profile'}
-					class:text-blue-600={activeTab === 'knowledge-profile'}
-					class:border-transparent={activeTab !== 'knowledge-profile'}
-					class:text-gray-500={activeTab !== 'knowledge-profile'}
-					on:click={() => setActiveTab('knowledge-profile')}
+					class="py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap"
+					class:border-blue-500={activeTab === 'progress'}
+					class:text-blue-600={activeTab === 'progress'}
+					class:border-transparent={activeTab !== 'progress'}
+					class:text-gray-500={activeTab !== 'progress'}
+					on:click={() => setActiveTab('progress')}
 				>
-					Knowledge Profile
+					Progress & Analytics
 				</button>
 				<button
-					class="py-2 px-1 border-b-2 font-medium text-sm"
-					class:border-blue-500={activeTab === 'courses'}
-					class:text-blue-600={activeTab === 'courses'}
-					class:border-transparent={activeTab !== 'courses'}
-					class:text-gray-500={activeTab !== 'courses'}
-					on:click={() => setActiveTab('courses')}
-				>
-					My Courses
-				</button>
-				<button
-					class="py-2 px-1 border-b-2 font-medium text-sm"
+					class="py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap"
 					class:border-blue-500={activeTab === 'roadmap'}
 					class:text-blue-600={activeTab === 'roadmap'}
 					class:border-transparent={activeTab !== 'roadmap'}
@@ -95,7 +91,47 @@
 					Learning Roadmap
 				</button>
 				<button
-					class="py-2 px-1 border-b-2 font-medium text-sm"
+					class="py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap"
+					class:border-blue-500={activeTab === 'goals'}
+					class:text-blue-600={activeTab === 'goals'}
+					class:border-transparent={activeTab !== 'goals'}
+					class:text-gray-500={activeTab !== 'goals'}
+					on:click={() => setActiveTab('goals')}
+				>
+					Goals & Achievements
+				</button>
+				<button
+					class="py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap"
+					class:border-blue-500={activeTab === 'notifications'}
+					class:text-blue-600={activeTab === 'notifications'}
+					class:border-transparent={activeTab !== 'notifications'}
+					class:text-gray-500={activeTab !== 'notifications'}
+					on:click={() => setActiveTab('notifications')}
+				>
+					Notifications
+				</button>
+				<button
+					class="py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap"
+					class:border-blue-500={activeTab === 'knowledge-profile'}
+					class:text-blue-600={activeTab === 'knowledge-profile'}
+					class:border-transparent={activeTab !== 'knowledge-profile'}
+					class:text-gray-500={activeTab !== 'knowledge-profile'}
+					on:click={() => setActiveTab('knowledge-profile')}
+				>
+					Knowledge Profile
+				</button>
+				<button
+					class="py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap"
+					class:border-blue-500={activeTab === 'courses'}
+					class:text-blue-600={activeTab === 'courses'}
+					class:border-transparent={activeTab !== 'courses'}
+					class:text-gray-500={activeTab !== 'courses'}
+					on:click={() => setActiveTab('courses')}
+				>
+					My Courses
+				</button>
+				<button
+					class="py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap"
 					class:border-blue-500={activeTab === 'adaptive'}
 					class:text-blue-600={activeTab === 'adaptive'}
 					class:border-transparent={activeTab !== 'adaptive'}
@@ -112,151 +148,47 @@
 	<main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
 		<div class="px-4 py-6 sm:px-0">
 			{#if activeTab === 'overview'}
-				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-				<!-- My Courses -->
-				<div class="bg-white overflow-hidden shadow rounded-lg">
-					<div class="p-5">
-						<div class="flex items-center">
-							<div class="flex-shrink-0">
-								<svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-								</svg>
-							</div>
-							<div class="ml-5 w-0 flex-1">
-								<dl>
-									<dt class="text-sm font-medium text-gray-500 truncate">My Courses</dt>
-									<dd class="text-lg font-medium text-gray-900">0</dd>
-								</dl>
-							</div>
-						</div>
-					</div>
-					<div class="bg-gray-50 px-5 py-3">
-						<div class="text-sm">
-							<Button
-								variant="primary"
-								size="sm"
-								onclick={() => goto('/courses')}
-							>
-								Browse Courses
-							</Button>
-						</div>
+				<div class="space-y-8">
+					<!-- Dashboard Metrics -->
+					<DashboardMetrics studentId={profile?.id || ''} />
+					
+					<!-- Recent Activity -->
+					<RecentActivity studentId={profile?.id || ''} limit={5} />
+				</div>
+
+			{:else if activeTab === 'progress'}
+				<div class="space-y-8">
+					<!-- Progress Visualization -->
+					<ProgressVisualization studentId={profile?.id || ''} />
+				</div>
+
+			{:else if activeTab === 'roadmap'}
+				<div class="space-y-8">
+					<!-- Interactive Roadmap -->
+					<InteractiveRoadmap studentId={profile?.id || ''} />
+					
+					<!-- Original Roadmap Component for comparison -->
+					<div class="mt-8">
+						<h2 class="text-xl font-semibold text-gray-900 mb-4">Alternative View</h2>
+						<PersonalizedRoadmap studentId={profile?.id || ''} />
 					</div>
 				</div>
 
-				<!-- Progress -->
-				<div class="bg-white overflow-hidden shadow rounded-lg">
-					<div class="p-5">
-						<div class="flex items-center">
-							<div class="flex-shrink-0">
-								<svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-								</svg>
-							</div>
-							<div class="ml-5 w-0 flex-1">
-								<dl>
-									<dt class="text-sm font-medium text-gray-500 truncate">Overall Progress</dt>
-									<dd class="text-lg font-medium text-gray-900">0%</dd>
-								</dl>
-							</div>
-						</div>
-					</div>
-					<div class="bg-gray-50 px-5 py-3">
-						<div class="text-sm">
-							<span class="text-gray-600">No active courses</span>
-						</div>
-					</div>
+			{:else if activeTab === 'goals'}
+				<div class="space-y-8">
+					<!-- Learning Goals -->
+					<LearningGoals studentId={profile?.id || ''} />
 				</div>
 
-				<!-- Assessments -->
-				<div class="bg-white overflow-hidden shadow rounded-lg">
-					<div class="p-5">
-						<div class="flex items-center">
-							<div class="flex-shrink-0">
-								<svg class="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-								</svg>
-							</div>
-							<div class="ml-5 w-0 flex-1">
-								<dl>
-									<dt class="text-sm font-medium text-gray-500 truncate">Pending Assessments</dt>
-									<dd class="text-lg font-medium text-gray-900">0</dd>
-								</dl>
-							</div>
-						</div>
-					</div>
-					<div class="bg-gray-50 px-5 py-3">
-						<div class="text-sm">
-							<Button
-								variant="primary"
-								size="sm"
-								onclick={() => goto('/assessments')}
-							>
-								View Assessments
-							</Button>
-						</div>
-					</div>
+			{:else if activeTab === 'notifications'}
+				<div class="space-y-8">
+					<!-- Notification Center -->
+					<NotificationCenter studentId={profile?.id || ''} />
 				</div>
 
-				<!-- Knowledge Assessment Card -->
-				<div class="bg-white overflow-hidden shadow rounded-lg">
-					<div class="p-5">
-						<div class="flex items-center">
-							<div class="flex-shrink-0">
-								<svg class="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-								</svg>
-							</div>
-							<div class="ml-5 w-0 flex-1">
-								<dl>
-									<dt class="text-sm font-medium text-gray-500 truncate">Knowledge Profile</dt>
-									<dd class="text-lg font-medium text-gray-900">Build Profile</dd>
-								</dl>
-							</div>
-						</div>
-					</div>
-					<div class="bg-gray-50 px-5 py-3">
-						<div class="text-sm">
-							<Button
-								variant="primary"
-								size="sm"
-								onclick={() => setActiveTab('knowledge-profile')}
-							>
-								View Profile
-							</Button>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- Recent Activity -->
-			<div class="mt-8">
-				<div class="bg-white shadow rounded-lg">
-					<div class="px-4 py-5 sm:p-6">
-						<h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
-							Recent Activity
-						</h3>
-						<div class="text-center py-12">
-							<svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-							</svg>
-							<h3 class="mt-2 text-sm font-medium text-gray-900">No activity yet</h3>
-							<p class="mt-1 text-sm text-gray-500">
-								Start by enrolling in a course to see your learning activity here.
-							</p>
-							<div class="mt-6">
-								<Button
-									variant="primary"
-									onclick={() => goto('/courses')}
-								>
-									Browse Courses
-								</Button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
 			{:else if activeTab === 'knowledge-profile'}
 				<KnowledgeProfile studentId={profile?.id || ''} />
+
 			{:else if activeTab === 'courses'}
 				<div class="text-center py-12">
 					<svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -275,8 +207,7 @@
 						</Button>
 					</div>
 				</div>
-			{:else if activeTab === 'roadmap'}
-				<PersonalizedRoadmap studentId={profile?.id || ''} />
+
 			{:else if activeTab === 'adaptive'}
 				<div class="space-y-6">
 					<AdaptiveLearningInsights 
