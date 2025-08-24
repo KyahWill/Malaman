@@ -3,6 +3,7 @@
 	import LogoutButton from '$lib/components/auth/LogoutButton.svelte';
 	import KnowledgeProfile from '$lib/components/student/KnowledgeProfile.svelte';
 	import PersonalizedRoadmap from '$lib/components/student/PersonalizedRoadmap.svelte';
+	import AdaptiveLearningInsights from '$lib/components/student/AdaptiveLearningInsights.svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import type { PageData } from './$types';
@@ -92,6 +93,16 @@
 					on:click={() => setActiveTab('roadmap')}
 				>
 					Learning Roadmap
+				</button>
+				<button
+					class="py-2 px-1 border-b-2 font-medium text-sm"
+					class:border-blue-500={activeTab === 'adaptive'}
+					class:text-blue-600={activeTab === 'adaptive'}
+					class:border-transparent={activeTab !== 'adaptive'}
+					class:text-gray-500={activeTab !== 'adaptive'}
+					on:click={() => setActiveTab('adaptive')}
+				>
+					Learning Insights
 				</button>
 			</nav>
 		</div>
@@ -266,6 +277,13 @@
 				</div>
 			{:else if activeTab === 'roadmap'}
 				<PersonalizedRoadmap studentId={profile?.id || ''} />
+			{:else if activeTab === 'adaptive'}
+				<div class="space-y-6">
+					<AdaptiveLearningInsights 
+						studentId={profile?.id || ''} 
+						showAlternativePaths={true}
+					/>
+				</div>
 			{/if}
 		</div>
 	</main>

@@ -269,6 +269,19 @@ async function updateStudentProgress(
         attempt.passed, 
         attempt.score
       );
+
+      // If assessment failed, trigger adaptive adjustments
+      if (!attempt.passed) {
+        try {
+          const { getAdaptiveRoadmapService } = await import('$lib/services/adaptiveRoadmapService.js');
+          const adaptiveService = getAdaptiveRoadmapService();
+          await adaptiveService.handleAssessmentFailure(studentId, assessment.id, attempt);
+          console.log(`Adaptive adjustments applied for failed assessment ${assessment.id} by student ${studentId}`);
+        } catch (adaptiveError) {
+          console.error('Failed to apply adaptive adjustments:', adaptiveError);
+          // Don't fail the main flow - adaptive adjustments are supplementary
+        }
+      }
     } catch (roadmapError) {
       // Log error but don't fail the progress update
       console.error('Failed to update roadmap after assessment:', roadmapError);

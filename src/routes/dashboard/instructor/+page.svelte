@@ -2,6 +2,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import LogoutButton from '$lib/components/auth/LogoutButton.svelte';
+	import AdaptiveAdjustmentManager from '$lib/components/instructor/AdaptiveAdjustmentManager.svelte';
 	import { goto } from '$app/navigation';
 	import { formatDate } from '$lib/utils';
 	import { onMount } from 'svelte';
@@ -262,6 +263,13 @@
 					</div>
 				</div>
 			</div>
+
+			<!-- Adaptive Learning Management -->
+			{#if recentCourses.length > 0}
+				<div class="mt-8">
+					<AdaptiveAdjustmentManager courseId={recentCourses[0]?.id || ''} />
+				</div>
+			{/if}
 
 			<!-- Recent Courses -->
 			<div class="mt-8">
