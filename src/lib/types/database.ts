@@ -471,3 +471,93 @@ export interface ContentPerformance {
   difficulty_rating: number;
   improvement_suggestions: string[];
 }
+
+// ============================================================================
+// RECOMMENDATION SYSTEM MODELS
+// ============================================================================
+
+export type FeedbackType = 'helpful' | 'not_helpful' | 'irrelevant' | 'too_easy' | 'too_hard';
+export type InteractionType = 'view' | 'start' | 'complete' | 'pause' | 'skip';
+export type RecommendationFactorType = 'knowledge_gap' | 'learning_style' | 'difficulty_match' | 'engagement_pattern' | 'peer_success';
+
+export interface ContentRecommendation {
+  id: string;
+  student_id: string;
+  content_id: string;
+  content_type: 'lesson' | 'course' | 'assessment';
+  score: number; // 0-1 scale
+  factors: RecommendationFactor[];
+  explanation: string;
+  viewed: boolean;
+  clicked: boolean;
+  created_at: string;
+  expires_at: string;
+}
+
+export interface RecommendationFactor {
+  type: RecommendationFactorType;
+  weight: number;
+  value: number;
+  description: string;
+}
+
+export interface EngagementPattern {
+  id: string;
+  student_id: string;
+  metrics: EngagementPatternMetrics;
+  patterns: string[];
+  preferences: EngagementPreferences;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EngagementPatternMetrics {
+  time_spent: number;
+  completion_rate: number;
+  assessment_scores: number[];
+  interaction_frequency: number;
+  content_type_preferences: Record<string, number>;
+  difficulty_preferences: Record<string, number>;
+}
+
+export interface EngagementPreferences {
+  content_type_preferences: Record<string, number>;
+  difficulty_preferences: Record<string, number>;
+  pace_preference: LearningPace;
+}
+
+export interface RecommendationFeedback {
+  id: string;
+  student_id: string;
+  content_id: string;
+  recommendation_id: string;
+  feedback_type: FeedbackType;
+  rating: number | null; // 1-5 scale
+  comment: string | null;
+  created_at: string;
+}
+
+export interface ContentInteraction {
+  id: string;
+  student_id: string;
+  content_id: string;
+  content_type: string;
+  interaction_type: InteractionType;
+  duration: number | null; // in seconds
+  metadata: Record<string, any>;
+  created_at: string;
+}
+
+export interface RecommendationRequest {
+  student_id: string;
+  content_type?: 'lesson' | 'course' | 'assessment';
+  limit?: number;
+  exclude_completed?: boolean;
+}
+
+export interface RecommendationScore {
+  content_id: string;
+  score: number;
+  factors: RecommendationFactor[];
+  explanation: string;
+}

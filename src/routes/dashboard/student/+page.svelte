@@ -7,6 +7,8 @@
 	import DashboardMetrics from '$lib/components/student/DashboardMetrics.svelte';
 	import ProgressVisualization from '$lib/components/student/ProgressVisualization.svelte';
 	import NotificationCenter from '$lib/components/student/NotificationCenter.svelte';
+	import ContentRecommendations from '$lib/components/student/ContentRecommendations.svelte';
+	import EngagementInsights from '$lib/components/student/EngagementInsights.svelte';
 	import LearningGoals from '$lib/components/student/LearningGoals.svelte';
 	import RecentActivity from '$lib/components/student/RecentActivity.svelte';
 	import InteractiveRoadmap from '$lib/components/student/InteractiveRoadmap.svelte';
@@ -112,6 +114,16 @@
 				</button>
 				<button
 					class="py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap"
+					class:border-blue-500={activeTab === 'recommendations'}
+					class:text-blue-600={activeTab === 'recommendations'}
+					class:border-transparent={activeTab !== 'recommendations'}
+					class:text-gray-500={activeTab !== 'recommendations'}
+					on:click={() => setActiveTab('recommendations')}
+				>
+					Recommendations
+				</button>
+				<button
+					class="py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap"
 					class:border-blue-500={activeTab === 'knowledge-profile'}
 					class:text-blue-600={activeTab === 'knowledge-profile'}
 					class:border-transparent={activeTab !== 'knowledge-profile'}
@@ -184,6 +196,15 @@
 				<div class="space-y-8">
 					<!-- Notification Center -->
 					<NotificationCenter studentId={profile?.id || ''} />
+				</div>
+
+			{:else if activeTab === 'recommendations'}
+				<div class="space-y-8">
+					<!-- Content Recommendations -->
+					<ContentRecommendations limit={8} showExplanations={true} />
+					
+					<!-- Engagement Insights -->
+					<EngagementInsights />
 				</div>
 
 			{:else if activeTab === 'knowledge-profile'}
