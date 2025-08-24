@@ -68,7 +68,7 @@
 					class:text-blue-600={activeTab === 'overview'}
 					class:border-transparent={activeTab !== 'overview'}
 					class:text-gray-500={activeTab !== 'overview'}
-					on:click={() => setActiveTab('overview')}
+					onclick={() => setActiveTab('overview')}
 				>
 					Overview
 				</button>
@@ -78,7 +78,7 @@
 					class:text-blue-600={activeTab === 'progress'}
 					class:border-transparent={activeTab !== 'progress'}
 					class:text-gray-500={activeTab !== 'progress'}
-					on:click={() => setActiveTab('progress')}
+					onclick={() => setActiveTab('progress')}
 				>
 					Progress & Analytics
 				</button>
@@ -88,7 +88,7 @@
 					class:text-blue-600={activeTab === 'roadmap'}
 					class:border-transparent={activeTab !== 'roadmap'}
 					class:text-gray-500={activeTab !== 'roadmap'}
-					on:click={() => setActiveTab('roadmap')}
+					onclick={() => setActiveTab('roadmap')}
 				>
 					Learning Roadmap
 				</button>
@@ -98,7 +98,7 @@
 					class:text-blue-600={activeTab === 'goals'}
 					class:border-transparent={activeTab !== 'goals'}
 					class:text-gray-500={activeTab !== 'goals'}
-					on:click={() => setActiveTab('goals')}
+					onclick={() => setActiveTab('goals')}
 				>
 					Goals & Achievements
 				</button>
@@ -108,7 +108,7 @@
 					class:text-blue-600={activeTab === 'notifications'}
 					class:border-transparent={activeTab !== 'notifications'}
 					class:text-gray-500={activeTab !== 'notifications'}
-					on:click={() => setActiveTab('notifications')}
+					onclick={() => setActiveTab('notifications')}
 				>
 					Notifications
 				</button>
@@ -118,7 +118,7 @@
 					class:text-blue-600={activeTab === 'recommendations'}
 					class:border-transparent={activeTab !== 'recommendations'}
 					class:text-gray-500={activeTab !== 'recommendations'}
-					on:click={() => setActiveTab('recommendations')}
+					onclick={() => setActiveTab('recommendations')}
 				>
 					Recommendations
 				</button>
@@ -128,7 +128,7 @@
 					class:text-blue-600={activeTab === 'knowledge-profile'}
 					class:border-transparent={activeTab !== 'knowledge-profile'}
 					class:text-gray-500={activeTab !== 'knowledge-profile'}
-					on:click={() => setActiveTab('knowledge-profile')}
+					onclick={() => setActiveTab('knowledge-profile')}
 				>
 					Knowledge Profile
 				</button>
@@ -138,7 +138,7 @@
 					class:text-blue-600={activeTab === 'courses'}
 					class:border-transparent={activeTab !== 'courses'}
 					class:text-gray-500={activeTab !== 'courses'}
-					on:click={() => setActiveTab('courses')}
+					onclick={() => setActiveTab('courses')}
 				>
 					My Courses
 				</button>
@@ -148,7 +148,7 @@
 					class:text-blue-600={activeTab === 'adaptive'}
 					class:border-transparent={activeTab !== 'adaptive'}
 					class:text-gray-500={activeTab !== 'adaptive'}
-					on:click={() => setActiveTab('adaptive')}
+					onclick={() => setActiveTab('adaptive')}
 				>
 					Learning Insights
 				</button>

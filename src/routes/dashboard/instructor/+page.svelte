@@ -3,6 +3,7 @@
 	import Card from '$lib/components/ui/Card.svelte';
 	import LogoutButton from '$lib/components/auth/LogoutButton.svelte';
 	import AdaptiveAdjustmentManager from '$lib/components/instructor/AdaptiveAdjustmentManager.svelte';
+	import AnalyticsDashboard from '$lib/components/instructor/AnalyticsDashboard.svelte';
 	import { goto } from '$app/navigation';
 	import { formatDate } from '$lib/utils';
 	import { onMount } from 'svelte';
@@ -20,6 +21,7 @@
 
 	let recentCourses = $state<any[]>([]);
 	let isLoading = $state(true);
+	let showAnalytics = $state(false);
 
 	onMount(async () => {
 		try {
@@ -98,6 +100,12 @@
 				</div>
 				<div class="flex items-center space-x-4">
 					<Button
+						variant={showAnalytics ? 'primary' : 'secondary'}
+						onclick={() => showAnalytics = !showAnalytics}
+					>
+						{showAnalytics ? 'Hide Analytics' : 'View Analytics'}
+					</Button>
+					<Button
 						variant="secondary"
 						onclick={() => goto('/profile')}
 					>
@@ -112,6 +120,10 @@
 	<!-- Main Content -->
 	<main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
 		<div class="px-4 py-6 sm:px-0">
+			{#if showAnalytics}
+				<!-- Analytics Dashboard -->
+				<AnalyticsDashboard instructorId={profile.id} />
+			{:else}
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 				<!-- My Courses -->
 				<div class="bg-white overflow-hidden shadow rounded-lg">
@@ -373,6 +385,7 @@
 					</div>
 				</div>
 			</div>
+			{/if}
 		</div>
 	</main>
 </div>

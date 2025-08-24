@@ -4,12 +4,16 @@
     import Card from '$lib/components/ui/Card.svelte';
     import { toastHelpers as toast } from '$lib/stores/toast.js';
     import type { Assessment, Course } from '$lib/types';
+    import { onMount } from 'svelte';
+    import type { PageData } from './$types';
   
-    let { course, assessments }: { 
-      course: Course, 
-      assessments: Assessment[]
-    } = $props();
-  
+    let { data }: { data: PageData } = $props();
+	  let { course, assessments } = $derived(data);
+
+    onMount(()=>{
+      console.log(course)
+    })
+      $effect(() => console.log(course))
     async function deleteAssessment(assessmentId: string) {
       if (!confirm('Are you sure you want to delete this assessment?')) {
         return;

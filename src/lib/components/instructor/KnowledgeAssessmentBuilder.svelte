@@ -36,7 +36,7 @@
   let error = '';
 
   // Reactive values
-  $: canCreate = config.subject_area.trim() && config.topics.length > 0 && config.question_count > 0;
+  let canCreate = $derived(config.subject_area.trim() && config.topics.length > 0 && config.question_count > 0)
 
   function addTopic() {
     const topic = newTopic.trim();
@@ -115,7 +115,7 @@
 <Card class="p-6">
   <h2 class="text-xl font-semibold mb-6">Create Knowledge Assessment</h2>
 
-  <form on:submit|preventDefault={createAssessment} class="space-y-6">
+  <form onsubmit={(event)=> {event.preventDefault();createAssessment()}} class="space-y-6">
     <!-- Subject Area -->
     <div>
       <Label for="subject-area">Subject Area *</Label>
@@ -154,7 +154,7 @@
               <button
                 type="button"
                 class="ml-1 text-blue-600 hover:text-blue-800"
-                on:click={() => removeTopic(topic)}
+                onclick={() => removeTopic(topic)}
               >
                 ×
               </button>

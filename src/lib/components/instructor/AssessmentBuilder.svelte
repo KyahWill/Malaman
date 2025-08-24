@@ -34,8 +34,20 @@
     onPreview?: (assessment: Assessment) => void;
   } = $props();
 
-  // Make assessment reactive
-  let assessmentState = $state(assessment);
+  // Make assessment reactive with proper initialization
+  let assessmentState = $state({
+    title: '',
+    description: '',
+    questions: [],
+    is_mandatory: true,
+    minimum_passing_score: 70,
+    max_attempts: null,
+    time_limit: null,
+    ai_generated: false,
+    source_content_ids: [],
+    ...assessment,
+    questions: Array.isArray(assessment.questions) ? assessment.questions : []
+  });
 
   // State
   let showQuestionModal = $state(false);
@@ -82,10 +94,24 @@
   $effect(() => {
     if (lessonId) assessmentState.lesson_id = lessonId;
     if (courseId) assessmentState.course_id = courseId;
+    
+    // Ensure questions is always an array
+    if (!Array.isArray(assessmentState.questions)) {
+      assessmentState.questions = [];
+    }
+  });
+
+  // Sync assessmentState changes back to the original assessment
+  $effect(() => {
+    Object.assign(assessment, assessmentState);
   });
 
   // Calculate total points
-  let totalPoints = $derived(assessmentState.questions?.reduce((sum, q) => sum + q.points, 0) || 0);
+  let totalPoints = $derived(
+    Array.isArray(assessmentState.questions) 
+      ? assessmentState.questions.reduce((sum, q) => sum + (q.points || 0), 0) 
+      : 0
+  );
 
   function addQuestion() {
     editingQuestion = {
@@ -118,12 +144,12 @@
       return;
     }
 
-    if (!assessment.questions) assessment.questions = [];
+    if (!assessmentState.questions) assessmentState.questions = [];
 
     if (editingQuestionIndex >= 0) {
-      assessment.questions[editingQuestionIndex] = editingQuestion;
+      assessmentState.questions[editingQuestionIndex] = editingQuestion;
     } else {
-      assessment.questions = [...assessment.questions, editingQuestion];
+      assessmentState.questions = [...assessmentState.questions, editingQuestion];
     }
 
     toast.success('Question saved!');
@@ -139,8 +165,8 @@
   }
 
   function deleteQuestion(index: number) {
-    if (!assessment.questions) return;
-    assessment.questions = assessment.questions.filter((_, i) => i !== index);
+    if (!assessmentState.questions) return;
+    assessmentState.questions = assessmentState.questions.filter((_, i) => i !== index);
   }
 
   function closeQuestionModal() {
@@ -251,12 +277,13 @@
 
       if (result.success && result.assessment) {
         // Merge AI-generated data with current assessment
-        assessment = {
-          ...assessment,
+        assessmentState = {
+          ...assessmentState,
           ...result.assessment,
           // Preserve user-set values
-          title: assessment.title || result.assessment.title,
-          description: assessment.description || result.assessment.description
+          title: assessmentState.title || result.assessment.title,
+          description: assessmentState.description || result.assessment.description,
+          questions: result.assessment.questions || []
         };
 
         toast.success(`Assessment generated successfully! ${result.metadata.questionsGenerated} questions created from ${result.metadata.contentAnalyzed} content blocks.`);
@@ -271,12 +298,12 @@
   }
 
   async function regenerateQuestion(questionIndex: number) {
-    if (!assessment.questions || questionIndex >= assessment.questions.length) {
+    if (!assessmentState.questions || questionIndex >= assessmentState.questions.length) {
       toast.error('Question not found');
       return;
     }
 
-    const originalQuestion = assessment.questions[questionIndex];
+    const originalQuestion = assessmentState.questions[questionIndex];
     
     try {
       const response = await fetch('/api/ai/regenerate-question', {
@@ -303,7 +330,7 @@
 
       if (result.success && result.question) {
         // Replace the question at the specified index
-        assessment.questions[questionIndex] = result.question;
+        assessmentState.questions[questionIndex] = result.question;
         toast.success('Question regenerated successfully!');
       }
     } catch (error) {
@@ -442,9 +469,9 @@
       <div>
         <h3 class="text-xl font-semibold">Questions</h3>
         <p class="text-gray-600">
-          {assessment.questions?.length || 0} questions • {totalPoints} total points
+          {assessmentState.questions?.length || 0} questions • {totalPoints} total points
         </p>
-        {#if assessment.ai_generated}
+        {#if assessmentState.ai_generated}
           <p class="text-sm text-blue-600 flex items-center mt-1">
             <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
               <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -454,7 +481,7 @@
         {/if}
       </div>
       <div class="flex space-x-2">
-        {#if (lessonId || courseId) && (!assessment.questions || assessment.questions.length === 0)}
+        {#if (lessonId || courseId) && (!assessmentState.questions || assessmentState.questions.length === 0)}
           <Button onclick={openAIGenerationModal} variant="outline" class="bg-blue-50 text-blue-700 hover:bg-blue-100">
             <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
               <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
@@ -469,9 +496,9 @@
     </div>
 
     <!-- Questions List -->
-    {#if assessment.questions && assessment.questions.length > 0}
+    {#if assessmentState.questions && assessmentState.questions.length > 0}
       <div class="space-y-4">
-        {#each assessment.questions as question, index}
+        {#each assessmentState.questions as question, index}
           <div class="border border-gray-200 rounded-lg p-4">
             <div class="flex justify-between items-start mb-2">
               <div class="flex-1">

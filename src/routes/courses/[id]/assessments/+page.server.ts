@@ -22,6 +22,8 @@ export const load: PageServerLoad = async ({params, locals, url }) => {
 			course = await CourseService.getById(courseId);
     }
 
+		console.log(course)
+
     let assessments = await AssessmentService.getByCourse(courseId)
 
 		return {
