@@ -243,6 +243,22 @@
 								View Assessments
 							</Button>
 						</div>
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+							<Button
+								variant="outline"
+								class="w-full"
+								onclick={() => goto('/knowledge-assessment/create')}
+							>
+								Create Knowledge Assessment
+							</Button>
+							<Button
+								variant="outline"
+								class="w-full"
+								onclick={() => goto('/assessments/create')}
+							>
+								Create Regular Assessment
+							</Button>
+						</div>
 					</div>
 				</div>
 			</div>

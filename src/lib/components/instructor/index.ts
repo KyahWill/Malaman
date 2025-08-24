@@ -10,4 +10,5 @@ export { default as AssessmentBuilder } from './AssessmentBuilder.svelte';
 export { default as AIAssessmentBuilder } from './AIAssessmentBuilder.svelte';
 export { default as AssessmentPreview } from './AssessmentPreview.svelte';
 export { default as AssessmentGrading } from './AssessmentGrading.svelte';
+export { default as KnowledgeAssessmentBuilder } from './KnowledgeAssessmentBuilder.svelte';
 export { default as ProgressManagement } from './ProgressManagement.svelte';
