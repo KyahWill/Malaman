@@ -427,12 +427,12 @@
 
     <!-- Actions -->
     <div class="flex justify-between">
-      <Button variant="outline" on:click={() => (showRegenerateModal = true)}>
+      <Button variant="outline" onclick={() => (showRegenerateModal = true)}>
         <RefreshCw class="h-4 w-4 mr-2" />
         Regenerate Roadmap
       </Button>
 
-      <Button on:click={saveSettings} disabled={saving}>
+      <Button onclick={saveSettings} disabled={saving}>
         <Save class="h-4 w-4 mr-2" />
         {saving ? "Saving..." : "Save Preferences"}
       </Button>
@@ -475,10 +475,10 @@
     </div>
 
     <div class="flex justify-end space-x-3 pt-4">
-      <Button variant="outline" on:click={() => (showRegenerateModal = false)}>
+      <Button variant="outline" onclick={() => (showRegenerateModal = false)}>
         Cancel
       </Button>
-      <Button on:click={regenerateRoadmap} disabled={saving}>
+      <Button onclick={regenerateRoadmap} disabled={saving}>
         {saving ? "Generating..." : "Regenerate Roadmap"}
       </Button>
     </div>

@@ -13,7 +13,7 @@
 	}
 
 	let {
-		open,
+		open=$bindable(false),
 		onClose,
 		title,
 		size = 'md',

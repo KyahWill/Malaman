@@ -8,3 +8,5 @@ export { default as Navigation } from './Navigation.svelte';
 export { default as Sidebar } from './Sidebar.svelte';
 export { default as MediaManager } from './MediaManager.svelte';
 export { default as ProgressionGate } from './ProgressionGate.svelte';
+export { default as AccessibilitySettings } from './AccessibilitySettings.svelte';
+export { default as KeyboardNavigationProvider } from './KeyboardNavigationProvider.svelte';

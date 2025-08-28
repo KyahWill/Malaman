@@ -156,14 +156,29 @@ export const transformContentBlock = (dbBlock: any): ContentBlock => {
  * Transform database assessment to API format
  */
 export const transformAssessment = (dbAssessment: any): Assessment => {
+  let questions = [];
+  
+  // Handle questions field - it might be a JSON string, array, or null/undefined
+  if (dbAssessment.questions) {
+    if (typeof dbAssessment.questions === 'string') {
+      try {
+        questions = JSON.parse(dbAssessment.questions);
+      } catch (error) {
+        console.warn('Failed to parse questions JSON:', error);
+        questions = [];
+      }
+    } else if (Array.isArray(dbAssessment.questions)) {
+      questions = dbAssessment.questions;
+    }
+  }
+
   return {
     id: dbAssessment.id,
     lesson_id: dbAssessment.lesson_id,
     course_id: dbAssessment.course_id,
     title: dbAssessment.title,
     description: dbAssessment.description,
-    questions: typeof dbAssessment.questions === 'string' ? 
-      (dbAssessment.questions) : dbAssessment.questions,
+    questions: questions,
     ai_generated: dbAssessment.ai_generated,
     source_content_ids: dbAssessment.source_content_ids || [],
     is_mandatory: dbAssessment.is_mandatory,

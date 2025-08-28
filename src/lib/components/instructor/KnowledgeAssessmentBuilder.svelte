@@ -20,20 +20,20 @@
   const dispatch = createEventDispatcher();
 
   // State
-  let config: KnowledgeAssessmentConfig = {
+  let config: KnowledgeAssessmentConfig = $state({
     subject_area: '',
     topics: [],
     difficulty_levels: ['beginner', 'intermediate', 'advanced'],
     question_count: 10,
     time_limit: 30
-  };
+  });
   
   let questionCountStr = $state('10');
   let timeLimitStr = $state('30');
   
-  let newTopic = '';
-  let isCreating = false;
-  let error = '';
+  let newTopic = $state('');
+  let isCreating = $state(false);
+  let error = $state('');
 
   // Reactive values
   let canCreate = $derived(config.subject_area.trim() && config.topics.length > 0 && config.question_count > 0)

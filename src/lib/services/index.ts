@@ -34,3 +34,8 @@ export type * from './progressionControl.js';
 // Roadmap services
 export { RoadmapService, getRoadmapService } from './roadmapService.js';
 export type * from './roadmapService.js';
+
+// Performance services
+export { CacheService, cacheService, withCache } from './caching.js';
+export { PerformanceMonitor, performanceMonitor, trackPerformance } from './performanceMonitoring.js';
+export { CDNOptimizationService, cdnService, cdnUtils } from './cdnOptimization.js';

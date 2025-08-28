@@ -16,7 +16,7 @@
 
   // Filters
   let filterType: 'all' | 'lesson' | 'course' = $state('all');
-  let searchQuery = '';
+  let searchQuery = $state('');
 
   onMount(async () => {
     await loadAssessments();
@@ -126,7 +126,7 @@
   function getAssessmentStatus(assessment: Assessment): { label: string; color: string } {
     // This would typically come from the database or be calculated
     // For now, we'll use a simple heuristic
-    if (assessment.questions.length === 0) {
+    if (!assessment.questions || assessment.questions.length === 0) {
       return { label: 'Draft', color: 'gray' };
     }
     return { label: 'Published', color: 'green' };
@@ -271,13 +271,13 @@
           <div class="grid grid-cols-3 gap-4 mb-4 text-center">
             <div>
               <div class="text-lg font-semibold text-gray-900">
-                {assessment.questions.length}
+                {assessment.questions?.length || 0}
               </div>
               <div class="text-xs text-gray-600">Questions</div>
             </div>
             <div>
               <div class="text-lg font-semibold text-gray-900">
-                {assessment.questions.reduce((sum, q) => sum + q.points, 0)}
+                {assessment.questions?.reduce((sum, q) => sum + q.points, 0) || 0}
               </div>
               <div class="text-xs text-gray-600">Points</div>
             </div>
@@ -359,6 +359,7 @@
                 onclick={() => duplicateAssessment(assessment)}
                 class="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded"
                 title="Duplicate"
+                aria-label="Duplicate assessment"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -369,6 +370,7 @@
                 onclick={() => confirmDelete(assessment)}
                 class="p-2 text-red-600 hover:text-red-800 hover:bg-red-100 rounded"
                 title="Delete"
+                aria-label="Delete assessment"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

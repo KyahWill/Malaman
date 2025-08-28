@@ -3,6 +3,7 @@
  * 
  * This file contains the database service layer with CRUD operations
  * for all data models in the personalized LMS application.
+ * Enhanced with caching and performance monitoring.
  */
 
 import { supabase } from '$lib/supabase.js';
@@ -15,10 +16,8 @@ import type {
   ContentBlock,
   Assessment,
   AssessmentAttempt,
-  PersonalizedRoadmap,
   StudentProgress,
-  Enrollment,
-  LearningAnalytics
+  Enrollment
 } from '$lib/types/database.js';
 import {
   transformUserProfile,
@@ -29,7 +28,6 @@ import {
   transformContentBlock,
   transformAssessment,
   transformAssessmentAttempt,
-  transformPersonalizedRoadmap,
   transformStudentProgress,
   transformUserProfileForDB,
   transformCourseForDB,
@@ -37,7 +35,9 @@ import {
   transformContentBlockForDB,
   transformAssessmentForDB
 } from '$lib/utils/transformers.js';
-import { DatabaseError, handleDatabaseError } from '$lib/utils/errors.js';
+import { handleDatabaseError } from '$lib/utils/errors.js';
+import { cacheService, CacheService, withCache } from './caching.js';
+import { trackPerformance } from './performanceMonitoring.js';
 
 // ============================================================================
 // USER PROFILE OPERATIONS
@@ -45,21 +45,24 @@ import { DatabaseError, handleDatabaseError } from '$lib/utils/errors.js';
 
 export class UserProfileService {
   /**
-   * Get user profile by ID
+   * Get user profile by ID with caching
    */
   static async getById(id: string): Promise<UserProfile | null> {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', id)
-        .single();
+    return withCache.userProfile(id, async () => {
+      return trackPerformance.databaseQuery(
+        'SELECT * FROM profiles WHERE id = $1',
+        async () => {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', id)
+            .single();
 
-      if (error) throw error;
-      return data ? transformUserProfile(data) : null;
-    } catch (error) {
-      throw handleDatabaseError(error, 'Failed to fetch user profile');
-    }
+          if (error) throw error;
+          return data ? transformUserProfile(data) : null;
+        }
+      );
+    });
   }
 
   /**
@@ -160,21 +163,24 @@ export class UserProfileService {
 
 export class CourseService {
   /**
-   * Get course by ID
+   * Get course by ID with caching
    */
   static async getById(id: string): Promise<Course | null> {
-    try {
-      const { data, error } = await supabase
-        .from('courses')
-        .select('*')
-        .eq('id', id)
-        .single();
+    return withCache.course(id, async () => {
+      return trackPerformance.databaseQuery(
+        'SELECT * FROM courses WHERE id = $1',
+        async () => {
+          const { data, error } = await supabase
+            .from('courses')
+            .select('*')
+            .eq('id', id)
+            .single();
 
-      if (error) throw error;
-      return data ? transformCourse(data) : null;
-    } catch (error) {
-      throw handleDatabaseError(error, 'Failed to fetch course');
-    }
+          if (error) throw error;
+          return data ? transformCourse(data) : null;
+        }
+      );
+    });
   }
 
   /**
@@ -724,20 +730,45 @@ export class AssessmentService {
    */
   static async getByInstructor(instructorId: string): Promise<Assessment[]> {
     try {
-      const { data, error } = await supabase
+      // First, get all courses owned by the instructor
+      const { data: courses, error: coursesError } = await supabase
+        .from('courses')
+        .select('id')
+        .eq('instructor_id', instructorId);
+
+      if (coursesError) throw coursesError;
+
+      const courseIds = courses?.map(c => c.id) || [];
+
+      if (courseIds.length === 0) {
+        return [];
+      }
+
+      // Get course-level assessments
+      const { data: courseAssessments, error: courseError } = await supabase
+        .from('assessments')
+        .select('*')
+        .in('course_id', courseIds)
+        .not('course_id', 'is', null);
+
+      if (courseError) throw courseError;
+
+      // Get lesson-level assessments for courses owned by instructor
+      const { data: lessonAssessments, error: lessonError } = await supabase
         .from('assessments')
         .select(`
-          *
-          lessons!assessments_lesson_id_fkey(
-            course_id,
-            courses!lessons_course_id_fkey(instructor_id)
-          ),
-          courses!assessments_course_id_fkey(instructor_id)
+          *,
+          lessons!assessments_lesson_id_fkey!inner(course_id)
         `)
-        //.or(`courses.instructor_id.eq.${instructorId}`);
+        .in('lessons.course_id', courseIds)
+        .not('lesson_id', 'is', null);
 
-      if (error) throw error;
-      return data.map(transformAssessment);
+      if (lessonError) throw lessonError;
+
+      // Combine assessments
+      const assessments = [...(courseAssessments || []), ...(lessonAssessments || [])];
+
+      return assessments.map(transformAssessment);
     } catch (error) {
       throw handleDatabaseError(error, 'Failed to fetch instructor assessments');
     }

@@ -39,16 +39,16 @@
   </script>
   
   <svelte:head>
-    <title>Manage Assessments for {course.title}</title>
+    <title>Manage Assessments for {course?.title}</title>
   </svelte:head>
   
   <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
       <div>
         <h1 class="text-3xl font-bold">Manage Assessments</h1>
-        <p class="text-gray-600">For course: {course.title}</p>
+        <p class="text-gray-600">For course: {course?.title}</p>
       </div>
-      <Button onclick={() => goto(`/assessments/create?courseId=${course.id}`)}>
+      <Button onclick={() => goto(`/assessments/create?courseId=${course?.id}`)}>
         Create New Assessment
       </Button>
     </div>
@@ -79,7 +79,7 @@
           <p class="text-gray-500 mt-2">
             Get started by creating a new assessment.
           </p>
-          <Button class="mt-4" onclick={() => goto(`/assessments/create?courseId=${course.id}`)}>
+          <Button class="mt-4" onclick={() => goto(`/assessments/create?courseId=${course?.id}`)}>
             Create Assessment
           </Button>
         </div>
